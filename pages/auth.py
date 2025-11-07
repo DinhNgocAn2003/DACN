@@ -10,7 +10,7 @@ def login_page():
     # Header với animation
     st.markdown("""
         <div style='text-align: center; padding: 2rem 0;'>
-            <h1 class='main-header'>📅 Lịch Cá Nhân Thông Minh</h1>
+            <h1 class='main-header'>Lịch Cá Nhân Thông Minh</h1>
             <p style='color: #718096; font-size: 1.1rem; margin-top: -1rem;'>
                 Quản lý thời gian hiệu quả với AI
             </p>

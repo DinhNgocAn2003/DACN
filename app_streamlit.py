@@ -176,6 +176,18 @@ st.markdown("""
     .element-container {
         animation: fadeIn 0.5s ease-out;
     }
+
+    /* Reduce top spacing: pull content closer to top */
+    .block-container {
+        padding-top: 0rem !important;
+        margin-top: -20px !important;
+    }
+
+    /* Additional selectors to cover Streamlit structural changes */
+    .stApp .main > div {
+        padding-top: 0rem !important;
+        margin-top: -20px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
