@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 
 // Simple calendar month view that shows event counts per day.
-const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDeleteEvent }) => {
+const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDeleteEvent, onCreateEvent }) => {
   // Use Vietnam timezone key helper early so we can initialize calendar month to VN today
   const dateKeyVN = (d) => {
     if (!d) return null;
@@ -128,11 +128,21 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
           {weeks.map((week, wi) => (
             week.map((d, di) => {
               const key = d ? formatDateKeyVN(d) : `empty-${wi}-${di}`;
-              const dayEvents = d ? (eventsByDate[key] || []) : [];
+              const dayEventsFull = d ? (eventsByDate[key] || []) : [];
+              // filter out events that are fully in the past for calendar grid display
+              const now = new Date();
+              const isEventPast = (ev) => {
+                const tStr = ev.end_time || ev.start_time;
+                if (!tStr) return false;
+                const t = new Date(tStr);
+                if (isNaN(t.getTime())) return false;
+                return t < now;
+              };
+              const dayEvents = dayEventsFull.filter(ev => !isEventPast(ev));
               const count = dayEvents.length;
               const selected = d && selectedDate ? isSameDay(d, new Date(selectedDate)) : false;
-                        const todayKey = formatDateKeyVN(new Date());
-                        const isToday = d ? key === todayKey : false;
+              const todayKey = formatDateKeyVN(new Date());
+              const isToday = d ? key === todayKey : false;
               const hasEvent = count > 0;
               const classes = [
                 'calendar-day',
@@ -142,8 +152,25 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
                 hasEvent ? 'has-event' : ''
               ].filter(Boolean).join(' ');
 
+              const handleDayClick = (dayDate) => {
+                if (!dayDate) return;
+                // notify parent (desktop) to set selectedDate
+                if (onSelectDate) {
+                  try { onSelectDate(dayDate); } catch (e) {}
+                }
+                // on small screens, open the modal listing so user can see events
+                try {
+                  if (typeof window !== 'undefined' && window.innerWidth <= 992) {
+                    setModalDate(dayDate);
+                    return;
+                  }
+                } catch (e) {}
+                // otherwise, if no parent handler provided, open modal as fallback
+                if (!onSelectDate) setModalDate(dayDate);
+              };
+
               return (
-                <div key={key} className={classes} onClick={() => d && (onSelectDate ? onSelectDate(d) : setModalDate(d))}>
+                <div key={key} className={classes} onClick={() => handleDayClick(d)}>
                   {d && (
                     <>
                       <div className="day-number">{d.getDate()}</div>
@@ -165,6 +192,8 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
             })
           ))}
       </div>
+
+      {/* Mobile toolbar removed; mobile actions are handled by parent (EventList) */}
 
         {/* Modal showing events for clicked date when modalDate is set */}
         {modalDate && (
@@ -220,6 +249,8 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
             </div>
           </div>
         )}
+
+      {/* Mobile add modals were moved to EventList (parent) so calendar stays focused */}
     </div>
   );
 };

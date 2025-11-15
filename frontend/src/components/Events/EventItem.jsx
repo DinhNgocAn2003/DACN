@@ -50,16 +50,28 @@ const EventItem = ({ event, onEdit, onDelete }) => {
   };
 
   const getTimeReminderText = (minutes) => {
-    if (!minutes) return 'Không nhắc nhở';
-    if (minutes < 60) return `Nhắc nhở trước ${minutes} phút`;
-    if (minutes < 1440) return `Nhắc nhở trước ${Math.floor(minutes/60)} giờ`;
-    return `Nhắc nhở trước ${Math.floor(minutes/1440)} ngày`;
+    if (!minutes) return 'Không đặt nhắc nhở';
+    if (minutes < 60) return `Trước ${minutes} phút`;
+    if (minutes < 1440) return `Trước ${Math.floor(minutes/60)} giờ`;
+    return `Trước ${Math.floor(minutes/1440)} ngày`;
   };
 
+  // Determine if event is in the past: prefer end_time, otherwise use start_time
+  const isPast = (() => {
+    const timeStr = event.end_time || event.start_time;
+    if (!timeStr) return false;
+    const t = new Date(timeStr).getTime();
+    if (isNaN(t)) return false;
+    return t < Date.now();
+  })();
+
   return (
-    <div className="event-item">
+    <div className={`event-item ${isPast ? 'past' : ''}`}>
       <div className="event-content">
-        <h4>{event.event_name}</h4>
+        <div className="event-header">
+          <h4>{event.event_name}</h4>
+          {isPast && <span className="event-badge past-badge">Đã kết thúc</span>}
+        </div>
 
         <div className="event-details">
           <p>

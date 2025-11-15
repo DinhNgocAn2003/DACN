@@ -4,6 +4,6 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000",
-    "dev:all": "npx concurrently \"python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000\" \"cd ../frontend && npm run dev\""
+    "dev:all": "npx concurrently -c auto \"python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000\" \"npm run dev --prefix ../frontend\""
   }
 }

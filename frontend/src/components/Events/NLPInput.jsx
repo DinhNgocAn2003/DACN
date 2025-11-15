@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { nlpAPI, eventsAPI } from '../../services/api';
 import { getCurrentUser } from '../../services/auth';
+import { useToast } from '../Common/ToastProvider';
 
 const NLPInput = ({ onEventCreated }) => {
   const [text, setText] = useState('');
@@ -8,28 +9,55 @@ const NLPInput = ({ onEventCreated }) => {
   const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const handleParseText = async () => {
     if (!text.trim()) return;
-    
+
+    // Quick client-side check: if the user input doesn't contain any time-like token,
+    // treat it as an immediate failure to avoid unnecessary API calls.
+    const timePattern = /(\d{1,2}[:h]\d{0,2}|\d{1,2}\s*(giờ|h|phút)|\blúc\b|\bvào\b|\b(sáng|chiều|tối|đêm|trưa)\b|\b(hôm nay|ngày mai|mai|tuần|tháng|thứ)\b)/i;
+    if (!timePattern.test(text)) {
+      const msg = 'Phân tích ko thành công, vui lòng nhập đầy đủ thông tin hơn';
+      setError(msg);
+      try { showToast({ type: 'error', message: msg }); } catch (e) {}
+      return;
+    }
+
     setLoading(true);
     setError('');
     
     try {
       const response = await nlpAPI.parseText(text);
       const data = response.data || {};
+
+      // If NLP didn't extract a start_time, consider the analysis failed.
+      if (!data.start_time) {
+        const msg = 'Phân tích ko thành công, vui lòng nhập đầy đủ thông tin hơn';
+        setError(msg);
+        try { showToast({ type: 'error', message: msg }); } catch (e) {}
+        setParsedEvent(null);
+        setFormData(null);
+        return;
+      }
+
+      // success with a valid start_time
       setParsedEvent(data);
+      try { showToast({ type: 'success', message: 'Phân tích văn bản thành công' }); } catch (e) {}
       // initialize form data for editing
+      const hasStart = !!data.start_time;
       setFormData({
         event_name: data.event_name || '',
         // keep datetime-local friendly format if possible
-        start_time: data.start_time ? data.start_time.slice(0, 16) : '',
-        end_time: data.end_time ? data.end_time.slice(0, 16) : '',
+        start_time: hasStart ? (data.start_time ? data.start_time.slice(0, 16) : '') : '',
+        end_time: hasStart && data.end_time ? data.end_time.slice(0, 16) : '',
         location: data.location || '',
-        time_reminder: data.time_reminder ?? ''
+        time_reminder: hasStart ? (data.time_reminder ?? '') : ''
       });
     } catch (error) {
-      setError('Không thể phân tích văn bản. Vui lòng thử lại.');
+      const msg = error.response?.data?.detail || 'Không thể phân tích văn bản. Vui lòng thử lại.';
+      setError(msg);
+      try { showToast({ type: 'error', message: msg }); } catch (e) {}
     } finally {
       setLoading(false);
     }
@@ -43,14 +71,15 @@ const NLPInput = ({ onEventCreated }) => {
         return;
       }
 
-      // prepare payload similar to EventForm
+      // If there's no start_time, ensure end_time and time_reminder are null
+      const hasStart = !!formData?.start_time;
       const submitData = {
         user_id: user.id,
         event_name: formData.event_name,
-        start_time: formData.start_time,
-        end_time: formData.end_time || null,
+        start_time: formData.start_time || null,
+        end_time: hasStart ? (formData.end_time || null) : null,
         location: formData.location || null,
-        time_reminder: formData.time_reminder ? parseInt(formData.time_reminder) : null
+        time_reminder: hasStart && formData.time_reminder ? parseInt(formData.time_reminder) : null
       };
 
       await eventsAPI.createEvent(submitData);
@@ -59,21 +88,32 @@ const NLPInput = ({ onEventCreated }) => {
       setFormData(null);
       setError('');
       onEventCreated();
-      alert('Sự kiện đã được thêm thành công!');
+      try { showToast({ type: 'success', message: 'Sự kiện đã được thêm thành công' }); } catch (e) {}
     } catch (error) {
-      setError(error.response?.data?.detail || 'Không thể tạo sự kiện. Vui lòng thử lại.');
+      const msg = error.response?.data?.detail || 'Không thể tạo sự kiện. Vui lòng thử lại.';
+      setError(msg);
+      try { showToast({ type: 'error', message: msg }); } catch (e) {}
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      if (!prev) return prev;
+      // if user clears start_time, also clear dependent fields
+      if (name === 'start_time' && !value) {
+        return { ...prev, start_time: '', end_time: '', time_reminder: '' };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return 'Không xác định';
     return new Date(dateTimeStr).toLocaleString('vi-VN');
   };
+
+  
 
   return (
     <div className="nlp-input">
@@ -112,7 +152,7 @@ const NLPInput = ({ onEventCreated }) => {
 
             <div className="form-group">
               <label>Thời gian kết thúc</label>
-              <input type="datetime-local" name="end_time" value={formData.end_time} onChange={handleChange} />
+              <input type="datetime-local" name="end_time" value={formData.end_time} onChange={handleChange} disabled={!formData.start_time} />
             </div>
 
             <div className="form-group">
@@ -122,7 +162,7 @@ const NLPInput = ({ onEventCreated }) => {
 
             <div className="form-group">
               <label>Nhắc nhở trước (phút)</label>
-              <input type="number" name="time_reminder" value={formData.time_reminder} onChange={handleChange} min="0" />
+              <input type="number" name="time_reminder" value={formData.time_reminder} onChange={handleChange} min="0" disabled={!formData.start_time} />
             </div>
 
             <div className="action-buttons">

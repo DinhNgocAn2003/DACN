@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { eventsAPI } from '../../services/api';
 import { getCurrentUser } from '../../services/auth';
+import { useToast } from '../Common/ToastProvider';
 
 const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (event) {
@@ -20,7 +22,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
         start_time: event.start_time ? event.start_time.slice(0, 16) : '',
         end_time: event.end_time ? event.end_time.slice(0, 16) : '',
         location: event.location || '',
-        time_reminder: event.time_reminder || ''
+        time_reminder: event.time_reminder ?? ''
       });
     } else if (initialDate) {
       // Prefill start_time from calendar selected date. Default to 09:00 on that date.
@@ -39,10 +41,13 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
   }, [event, initialDate]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    // if start_time is cleared, also clear dependent fields
+    if (name === 'start_time' && !value) {
+      setFormData(prev => ({ ...prev, start_time: '', end_time: '', time_reminder: '' }));
+      return;
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -50,6 +55,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
     setLoading(true);
     setError('');
 
+    
     try {
       const currentUser = getCurrentUser();
       const submitData = {
@@ -69,10 +75,13 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
       } else {
         await eventsAPI.createEvent(submitData);
       }
-      
       onSuccess();
+      showToast({ type: 'success', message: event ? 'Cập nhật sự kiện thành công' : 'Thêm sự kiện thành công' });
     } catch (error) {
-      setError(error.response?.data?.detail || 'Có lỗi xảy ra');
+      const msg = error.response?.data?.detail || error.message || 'Có lỗi xảy ra';
+      setError(msg);
+      // show toast for failure
+      try { showToast({ type: 'error', message: msg }); } catch (e) { /* ignore */ }
     } finally {
       setLoading(false);
     }
@@ -118,16 +127,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
               name="end_time"
               value={formData.end_time}
               onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Địa điểm</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
+              disabled={!formData.start_time}
             />
           </div>
 
@@ -140,6 +140,17 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
               onChange={handleChange}
               min="0"
               placeholder="Ví dụ: 15"
+              disabled={!formData.start_time}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Địa điểm</label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
             />
           </div>
 

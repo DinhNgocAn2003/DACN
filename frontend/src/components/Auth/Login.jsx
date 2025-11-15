@@ -10,6 +10,8 @@ const Login = ({ setUser }) => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [usernameFocused, setUsernameFocused] = useState(false)
+  const [passwordFocused, setPasswordFocused] = useState(false)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -44,10 +46,10 @@ const Login = ({ setUser }) => {
         <h2>Đăng nhập</h2>
         {error && <div className="error-message">{error}</div>}
         
-        <form onSubmit={handleSubmit} autoComplete="off">
-          {/* Hidden dummy inputs help prevent browser autofill (common trick) */}
-          <input type="text" name="prevent_autofill_username" autoComplete="username" style={{ display: 'none' }} />
-          <input type="password" name="prevent_autofill_password" autoComplete="new-password" style={{ display: 'none' }} />
+        <form onSubmit={handleSubmit} autoComplete="off" spellCheck="false">
+          {/* dummy fields to discourage browser autofill */}
+          <input type="text" name="__hidden_username" autoComplete="username" style={{ display: 'none' }} />
+          <input type="password" name="__hidden_password" autoComplete="new-password" style={{ display: 'none' }} />
           <div className="form-group">
             <label>Tên người dùng:</label>
             <input
@@ -57,6 +59,8 @@ const Login = ({ setUser }) => {
               value={formData.username}
               onChange={handleChange}
               autoComplete="off"
+              readOnly={!usernameFocused}
+              onFocus={() => setUsernameFocused(true)}
               required
             />
           </div>
@@ -69,7 +73,9 @@ const Login = ({ setUser }) => {
               placeholder="Nhập mật khẩu"
               value={formData.password}
               onChange={handleChange}
-              autoComplete="current-password"
+              autoComplete="new-password"
+              readOnly={!passwordFocused}
+              onFocus={() => setPasswordFocused(true)}
               required
             />
           </div>
