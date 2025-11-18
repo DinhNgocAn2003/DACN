@@ -2,8 +2,11 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import { setCurrentUser } from '../../services/auth'
+import { useToast } from '../Common/ToastProvider';
 
 const Login = ({ setUser }) => {
+
+  const {showToast} = useToast();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -25,15 +28,15 @@ const Login = ({ setUser }) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     try {
       const response = await authAPI.login(formData)
       const { user, token } = response.data
-      
       setCurrentUser(user, token)
       setUser(user)
       navigate('/')
+      showToast({ type: 'success', message: "Đăng nhập thành công"});
     } catch (error) {
+      showToast({ type: 'error', message: 'Đăng nhập thất bại'});
       setError(error.response?.data?.detail || 'Đăng nhập thất bại')
     } finally {
       setLoading(false)
@@ -47,7 +50,6 @@ const Login = ({ setUser }) => {
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit} autoComplete="off" spellCheck="false">
-          {/* dummy fields to discourage browser autofill */}
           <input type="text" name="__hidden_username" autoComplete="username" style={{ display: 'none' }} />
           <input type="password" name="__hidden_password" autoComplete="new-password" style={{ display: 'none' }} />
           <div className="form-group">
@@ -80,7 +82,7 @@ const Login = ({ setUser }) => {
             />
           </div>
           
-          <button type="submit" disabled={loading}>
+          <button type="submit" className="btn-primary full-width" disabled={loading}>
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>

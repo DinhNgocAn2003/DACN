@@ -6,6 +6,7 @@ import EventForm from './EventForm';
 import NLPInput from './NLPInput';
 import Calendar from './Calendar';
 import ConfirmationModal from '../Common/ConfirmationModal';
+import { getCurrentUser } from '../../services/auth';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -23,16 +24,16 @@ const EventList = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await eventsAPI.getEvents();
-      // console.log('Fetched events:', response.data);
-      // Backend returns { events: [...], count: n }.
-      // Accept either a plain array or the wrapped object for compatibility.
-      const data = response.data;
-      const list = Array.isArray(data) ? data : (data?.events ?? []);
-      setEvents(list);
+      // If user is logged in, fetch their events; otherwise fetch public events
+      const user = getCurrentUser();
+      const response = await eventsAPI.getEventsByUser(user.id);
+      const data = response?.data ?? {};
+      const list = Array.isArray(data) ? data : (data.events ?? []);
+      setEvents(Array.isArray(list) ? list : []);
     } catch (error) {
       setError('Không thể tải danh sách sự kiện');
-      try { toast.showToast({ type: 'error', message: 'Không thể tải danh sách sự kiện' }); } catch (e) {}
+      const msg = error.response?.data?.detail || error.message || 'Không thể tải danh sách sự kiện';
+      try { toast.showToast({ type: 'error', message: msg }); } catch (e) {}
       console.log(error);
     } finally {
       setLoading(false);
@@ -104,7 +105,14 @@ const EventList = () => {
 
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
         <div className="events-sidebar">
-          <Calendar events={events} selectedDate={selectedDate} onSelectDate={(d) => setSelectedDate(d)} onEditEvent={handleEditEvent} onDeleteEvent={handleDeleteEvent} />
+          <Calendar
+            events={events}
+            selectedDate={selectedDate}
+            onSelectDate={(d) => setSelectedDate(d)}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onRequestDelete={(id, name) => setDeleteCandidate({ id, name })}
+          />
         </div>
 
         <div className="events-main">

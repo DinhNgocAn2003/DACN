@@ -38,7 +38,7 @@ const Register = () => {
         password: formData.password
       })
       
-      navigate('/verify-email', { state: { email: formData.email } })
+      // navigate('/verify-email', { state: { email: formData.email } })
     } catch (error) {
       setError(error.response?.data?.detail || 'Đăng ký thất bại')
     } finally {
@@ -101,7 +101,7 @@ const Register = () => {
             />
           </div>
           
-          <button type="submit" disabled={loading}>
+         <button type="submit" className="btn-primary full-width" disabled={loading}>
             {loading ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>
         </form>

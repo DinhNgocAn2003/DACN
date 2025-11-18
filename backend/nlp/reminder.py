@@ -26,9 +26,11 @@ def extract_reminder(text: str) -> Tuple[Optional[int], str]:
             text_clean = text[:match.start()] + text[match.end():]
             return minutes, text_clean.strip()
 
-    # Nếu có từ nhắc/báo nhưng không có số, theo hành vi cũ trả về 15
+    # Nếu có từ nhắc/báo nhưng không có số, hiện tại không đặt mặc định;
+    # trả về (None, cleaned_text) để frontend/backends khác có thể quyết định.
     if re.search(r'\b(nhắc|báo)\b', text, re.IGNORECASE):
         text_clean = re.sub(r'^\s*(?:nhắc|báo)\s+(?:tôi|tui|em|mình|anh|chị)\s+', '', text, flags=re.IGNORECASE)
-        return 15, text_clean
+        return None, text_clean
 
-    return 15, text
+    # Không tìm thấy thông tin nhắc -> không đặt mặc định
+    return None, text

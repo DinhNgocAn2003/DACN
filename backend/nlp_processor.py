@@ -6,15 +6,21 @@ from nlp.location import extract_location
 from nlp.time_extractor import extract_time
 from nlp.name_extractor import extract_event_name
 from nlp.datetime_builder import build_datetime
+from nlp.preprocess import normalize_text
 
 
 class NLPProcessor:
     def process_text(self, text: str) -> Dict[str, Any]:
         try:
             original_text = text
-            text = re.sub(r'[.,:;!?]', '', text)
 
-            minutes, text_no_reminder = extract_reminder(text)
+            # preprocess (expand abbreviations, produce normalized & no-accent variants)
+            pre = normalize_text(text)
+            working = pre.get('normalized')
+            # strip some punctuation for easier regex matching
+            working = re.sub(r"[.,;!?\"']", '', working)
+
+            minutes, text_no_reminder = extract_reminder(working)
             location, text_no_location = extract_location(text_no_reminder)
             time_info = extract_time(text_no_location)
             event_name = extract_event_name(text_no_location, time_info)

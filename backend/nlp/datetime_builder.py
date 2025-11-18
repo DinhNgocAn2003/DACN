@@ -62,11 +62,6 @@ def build_datetime(time_info: Dict) -> Tuple[datetime, Optional[datetime]]:
             days_ahead = (target_day - current_day) % 7
             if days_ahead == 0:
                 days_ahead = 7
-            # If the phrase included a week modifier like "tuần sau/tới",
-            # interpret it as the same weekday in the next week. Only add
-            # an extra 7 days when the computed next occurrence is within
-            # the current week (days_ahead < 7). This avoids doubling the
-            # offset when the next occurrence already points to next week.
             if 'tuần' in date_text and ('sau' in date_text or 'tới' in date_text):
                 if days_ahead < 7:
                     days_ahead += 7
@@ -90,26 +85,30 @@ def build_datetime(time_info: Dict) -> Tuple[datetime, Optional[datetime]]:
 
     time_start = time_info.get('time_start')
     time_end = time_info.get('time_end')
+    all_day = time_info.get('all_day', False)
 
     hour_start, minute_start = parse_time_string(time_start)
-    # If a time period (sáng/chiều/tối/trưa/đêm) was detected, adjust
-    # hour into 24-hour clock when an explicit hour was provided.
     time_period = time_info.get('time_period')
     if hour_start is not None and time_period:
         tp = time_period.lower()
-        # normalize some variants
         if tp in ('chiều', 'tối', 'đêm'):
             if hour_start < 12:
                 hour_start = (hour_start % 12) + 12
         elif tp == 'sáng':
-            # '12 giờ sáng' -> 0
             if hour_start == 12:
                 hour_start = 0
         elif tp == 'trưa':
-            # treat 'trưa' as midday; if user wrote a single hour like '1 trưa'
-            # keep it as is unless it's ambiguous; we won't shift by default
             if hour_start == 12:
                 hour_start = 12
+    if all_day:
+        # full day event: start at 00:00:00, end at 23:59:59
+        start_datetime = datetime.combine(base_date, datetime.min.time()).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        end_datetime = datetime.combine(base_date, datetime.max.time()).replace(microsecond=0)
+        # if the computed day is today but time has already passed, keep as today (all-day applies)
+        return start_datetime, end_datetime
+
     if hour_start is None:
         if time_info.get('has_time_period'):
             hour_start, minute_start = 19, 0

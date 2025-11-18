@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 
 // Simple calendar month view that shows event counts per day.
 const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDeleteEvent, onCreateEvent }) => {
-  // Use Vietnam timezone key helper early so we can initialize calendar month to VN today
   const dateKeyVN = (d) => {
     if (!d) return null;
     const dateObj = (typeof d === 'string') ? new Date(d) : d;
@@ -14,7 +13,6 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
   };
 
   const [current, setCurrent] = useState(() => {
-    // Initialize to the VN month for "today"
     const nowKey = dateKeyVN(new Date());
     if (nowKey) {
       const [y, m] = nowKey.split('-');
@@ -240,7 +238,22 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         {onEditEvent && <button className="btn-edit" onClick={() => { setModalDate(null); onEditEvent(ev); }}>Sửa</button>}
-                        {onDeleteEvent && <button className="btn-delete" onClick={async () => { if (confirm('Xác nhận xóa?')) { await onDeleteEvent(ev.id); setModalDate(null); } }}>Xóa</button>}
+                        {onDeleteEvent && (
+                          <button
+                            className="btn-delete"
+                            onClick={async () => {
+                              if (typeof onRequestDelete === 'function') {
+                                try { onRequestDelete(ev.id, ev.event_name); } catch (e) {}
+                                setModalDate(null);
+                                return;
+                              }
+                              if (confirm('Xác nhận xóa?')) {
+                                await onDeleteEvent(ev.id);
+                                setModalDate(null);
+                              }
+                            }}
+                          >Xóa</button>
+                        )}
                       </div>
                     </div>
                   ));

@@ -58,10 +58,20 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
     
     try {
       const currentUser = getCurrentUser();
+      const formatForBackend = (s) => {
+        if (!s) return null;
+        if (s.includes('T')) {
+          const v = s.replace('T', ' ');
+          return v.length === 16 ? `${v}:00` : v;
+        }
+        return s;
+      };
+
       const submitData = {
         ...formData,
         time_reminder: formData.time_reminder ? parseInt(formData.time_reminder) : null,
-        end_time: formData.end_time || null,
+        start_time: formatForBackend(formData.start_time),
+        end_time: formatForBackend(formData.end_time),
         // ensure user_id is provided (use existing event.user_id when editing)
         user_id: event ? event.user_id : (currentUser ? currentUser.id : null)
       };

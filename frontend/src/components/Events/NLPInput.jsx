@@ -14,26 +14,27 @@ const NLPInput = ({ onEventCreated }) => {
   const handleParseText = async () => {
     if (!text.trim()) return;
 
-    // Quick client-side check: if the user input doesn't contain any time-like token,
-    // treat it as an immediate failure to avoid unnecessary API calls.
+    setParsedEvent(null);
+    setFormData(null);
+    setError('');
+
+
     const timePattern = /(\d{1,2}[:h]\d{0,2}|\d{1,2}\s*(giờ|h|phút)|\blúc\b|\bvào\b|\b(sáng|chiều|tối|đêm|trưa)\b|\b(hôm nay|ngày mai|mai|tuần|tháng|thứ)\b)/i;
     if (!timePattern.test(text)) {
-      const msg = 'Phân tích ko thành công, vui lòng nhập đầy đủ thông tin hơn';
+      const msg = 'Phân tích không thành công, vui lòng nhập đầy đủ thông tin hơn';
       setError(msg);
       try { showToast({ type: 'error', message: msg }); } catch (e) {}
       return;
     }
 
     setLoading(true);
-    setError('');
     
     try {
       const response = await nlpAPI.parseText(text);
       const data = response.data || {};
 
-      // If NLP didn't extract a start_time, consider the analysis failed.
       if (!data.start_time) {
-        const msg = 'Phân tích ko thành công, vui lòng nhập đầy đủ thông tin hơn';
+        const msg = 'Phân tích không thành công, vui lòng nhập đầy đủ thông tin hơn (thời gian bắt đầu)';
         setError(msg);
         try { showToast({ type: 'error', message: msg }); } catch (e) {}
         setParsedEvent(null);
@@ -41,23 +42,27 @@ const NLPInput = ({ onEventCreated }) => {
         return;
       }
 
-      // success with a valid start_time
+
       setParsedEvent(data);
       try { showToast({ type: 'success', message: 'Phân tích văn bản thành công' }); } catch (e) {}
-      // initialize form data for editing
+
       const hasStart = !!data.start_time;
+
+      const toDateTimeLocal = (s) => {
+        if (!s) return '';
+        // backend returns 'YYYY-MM-DD HH:MM:SS' — convert to 'YYYY-MM-DDTHH:MM' for datetime-local
+        const normalized = s.replace(' ', 'T');
+        return normalized.slice(0, 16);
+      };
+
       setFormData({
         event_name: data.event_name || '',
-        // keep datetime-local friendly format if possible
-        start_time: hasStart ? (data.start_time ? data.start_time.slice(0, 16) : '') : '',
-        end_time: hasStart && data.end_time ? data.end_time.slice(0, 16) : '',
+        // convert backend datetime to datetime-local input value
+        start_time: hasStart ? toDateTimeLocal(data.start_time) : '',
+        end_time: hasStart && data.end_time ? toDateTimeLocal(data.end_time) : '',
         location: data.location || '',
         time_reminder: hasStart ? (data.time_reminder ?? '') : ''
       });
-    } catch (error) {
-      const msg = error.response?.data?.detail || 'Không thể phân tích văn bản. Vui lòng thử lại.';
-      setError(msg);
-      try { showToast({ type: 'error', message: msg }); } catch (e) {}
     } finally {
       setLoading(false);
     }
@@ -71,13 +76,22 @@ const NLPInput = ({ onEventCreated }) => {
         return;
       }
 
-      // If there's no start_time, ensure end_time and time_reminder are null
+      const formatForBackend = (s) => {
+        if (!s) return null;
+        // if datetime-local 'YYYY-MM-DDTHH:MM' -> 'YYYY-MM-DD HH:MM:00'
+        if (s.includes('T')) {
+          const v = s.replace('T', ' ');
+          return v.length === 16 ? `${v}:00` : v;
+        }
+        return s;
+      };
+
       const hasStart = !!formData?.start_time;
       const submitData = {
         user_id: user.id,
         event_name: formData.event_name,
-        start_time: formData.start_time || null,
-        end_time: hasStart ? (formData.end_time || null) : null,
+        start_time: formatForBackend(formData.start_time),
+        end_time: hasStart ? formatForBackend(formData.end_time) : null,
         location: formData.location || null,
         time_reminder: hasStart && formData.time_reminder ? parseInt(formData.time_reminder) : null
       };
@@ -133,8 +147,6 @@ const NLPInput = ({ onEventCreated }) => {
           {loading ? 'Đang phân tích...' : 'Phân tích'}
         </button>
       </div>
-
-      {error && <div className="error-message">{error}</div>}
 
       {parsedEvent && formData && (
         <div className="parsed-event">

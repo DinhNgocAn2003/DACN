@@ -8,7 +8,8 @@ def extract_time(text: str) -> Dict[str, Any]:
         'time_end': None,
         'raw_matches': [],
         'has_time_period': False,
-        'time_period': None
+        'time_period': None,
+        'all_day': False
     }
 
     m_period = re.search(r'\b(tối|sáng|chiều|trưa|đêm)\b', text, re.IGNORECASE)
@@ -34,6 +35,14 @@ def extract_time(text: str) -> Dict[str, Any]:
 
     if not time_info['date_text']:
         time_info['date_text'] = 'hôm nay'
+
+    # detect all-day phrases like 'cả ngày' (and variants without diacritics)
+    if re.search(r'\b(cả\s+ngày|ca\s+ngay|ca\s+ngày)\b', text, re.IGNORECASE):
+        time_info['all_day'] = True
+        # include the phrase to raw_matches so name_extractor can strip it
+        m = re.search(r'\b(cả\s+ngày|ca\s+ngay|ca\s+ngày)\b', text, re.IGNORECASE)
+        if m:
+            time_info['raw_matches'].append(m.group(0))
 
     time_patterns = [
         (r'(\d{1,2}:\d{2})', lambda m: m.group(1)),
