@@ -10,3 +10,4 @@ apscheduler
 dateparser
 python-dotenv
 email-validator
+sqlmodel
