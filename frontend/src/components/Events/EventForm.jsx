@@ -77,7 +77,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
       };
 
       if (!submitData.user_id) {
-        throw new Error('Người dùng chưa đăng nhập. Vui lòng đăng nhập để tạo sự kiện.');
+          throw new Error('Người dùng chưa đăng nhập. Vui lòng đăng nhập để tạo lịch trình.');
       }
 
       if (event) {
@@ -86,7 +86,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
         await eventsAPI.createEvent(submitData);
       }
       onSuccess();
-      showToast({ type: 'success', message: event ? 'Cập nhật sự kiện thành công' : 'Thêm sự kiện thành công' });
+      showToast({ type: 'success', message: event ? 'Cập nhật lịch trình thành công' : 'Thêm lịch trình thành công' });
     } catch (error) {
       const msg = error.response?.data?.detail || error.message || 'Có lỗi xảy ra';
       setError(msg);
@@ -101,7 +101,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h3>{event ? 'Chỉnh sửa sự kiện' : 'Thêm sự kiện mới'}</h3>
+          <h3>{event ? 'Chỉnh sửa lịch trình' : 'Thêm lịch trình mới'}</h3>
           <button onClick={onClose} className="close-btn">&times;</button>
         </div>
 
@@ -109,7 +109,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Tên sự kiện *</label>
+            <label>Tên lịch trình *</label>
             <input
               type="text"
               name="event_name"
@@ -169,7 +169,7 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
               Huỷ
             </button>
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? 'Đang lưu...' : (event ? 'Cập nhật' : 'Thêm sự kiện')}
+              {loading ? 'Đang lưu...' : (event ? 'Cập nhật' : 'Thêm lịch trình')}
             </button>
           </div>
         </form>

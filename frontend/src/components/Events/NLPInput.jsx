@@ -72,7 +72,7 @@ const NLPInput = ({ onEventCreated }) => {
     try {
       const user = getCurrentUser();
       if (!user) {
-        setError('Vui lòng đăng nhập để tạo sự kiện.');
+        setError('Vui lòng đăng nhập để tạo lịch trình.');
         return;
       }
 
@@ -102,9 +102,9 @@ const NLPInput = ({ onEventCreated }) => {
       setFormData(null);
       setError('');
       onEventCreated();
-      try { showToast({ type: 'success', message: 'Sự kiện đã được thêm thành công' }); } catch (e) {}
+      try { showToast({ type: 'success', message: 'Lịch trình đã được thêm thành công' }); } catch (e) {}
     } catch (error) {
-      const msg = error.response?.data?.detail || 'Không thể tạo sự kiện. Vui lòng thử lại.';
+      const msg = error.response?.data?.detail || 'Không thể tạo lịch trình. Vui lòng thử lại.';
       setError(msg);
       try { showToast({ type: 'error', message: msg }); } catch (e) {}
     }
@@ -131,13 +131,13 @@ const NLPInput = ({ onEventCreated }) => {
 
   return (
     <div className="nlp-input">
-      <h3>Thêm sự kiện bằng văn bản</h3>
+      <h3>Thêm lịch trình bằng văn bản</h3>
       
       <div className="input-group">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Nhập mô tả sự kiện... (VD: Họp nhóm lúc 14h chiều mai tại phòng họp 301)"
+          placeholder="Nhập mô tả lịch trình... (VD: Họp nhóm lúc 14h chiều mai tại phòng họp 301)"
           rows="1"
         />
         <button 
@@ -150,10 +150,10 @@ const NLPInput = ({ onEventCreated }) => {
 
       {parsedEvent && formData && (
         <div className="parsed-event">
-          <h4>Thông tin sự kiện đã phân tích (chỉnh sửa nếu cần):</h4>
+          <h4>Thông tin lịch trình đã phân tích (chỉnh sửa nếu cần):</h4>
           <form className="nlp-form" onSubmit={(e) => { e.preventDefault(); handleCreateEvent(); }}>
             <div className="form-group">
-              <label>Tên sự kiện *</label>
+              <label>Tên lịch trình *</label>
               <input type="text" name="event_name" value={formData.event_name} onChange={handleChange} required />
             </div>
 

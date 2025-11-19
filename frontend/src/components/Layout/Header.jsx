@@ -22,7 +22,7 @@ const Header = ({ user, setUser }) => {
     <>
       <header className="header">
         <div className="header-content">
-          <h1>Trợ lý sự kiện</h1>
+          <h1>Trợ lý lịch trình</h1>
           <div className="user-info">
             <div>Xin chào,{user?.username} </div>
             <button onClick={handleLogout} className="btn-logout">

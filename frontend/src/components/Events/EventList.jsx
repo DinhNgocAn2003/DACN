@@ -31,8 +31,8 @@ const EventList = () => {
       const list = Array.isArray(data) ? data : (data.events ?? []);
       setEvents(Array.isArray(list) ? list : []);
     } catch (error) {
-      setError('Không thể tải danh sách sự kiện');
-      const msg = error.response?.data?.detail || error.message || 'Không thể tải danh sách sự kiện';
+      setError('Không thể tải danh sách lịch trình');
+      const msg = error.response?.data?.detail || error.message || 'Không thể tải danh sách lịch trình';
       try { toast.showToast({ type: 'error', message: msg }); } catch (e) {}
       console.log(error);
     } finally {
@@ -58,7 +58,7 @@ const EventList = () => {
 
   const handleDeleteEvent = (id) => {
     const ev = events.find((e) => e.id === id);
-    setDeleteCandidate({ id, name: ev?.event_name ?? 'sự kiện' });
+    setDeleteCandidate({ id, name: ev?.event_name ?? 'lịch trình' });
   };
 
   const performDelete = async () => {
@@ -66,10 +66,10 @@ const EventList = () => {
     try {
       await eventsAPI.deleteEvent(deleteCandidate.id);
       fetchEvents();
-      try { toast.showToast({ type: 'success', message: 'Xóa sự kiện thành công' }); } catch (e) {}
+      try { toast.showToast({ type: 'success', message: 'Xóa lịch trình thành công' }); } catch (e) {}
     } catch (error) {
-      setError('Không thể xóa sự kiện');
-      try { toast.showToast({ type: 'error', message: 'Không thể xóa sự kiện' }); } catch (e) {}
+      setError('Không thể xóa lịch trình');
+      try { toast.showToast({ type: 'error', message: 'Không thể xóa lịch trình' }); } catch (e) {}
     } finally {
       setDeleteCandidate(null);
     }
@@ -93,7 +93,7 @@ const EventList = () => {
         <h2>Lịch trình của tôi</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button onClick={handleCreateEvent} className="btn-primary">
-            Thêm sự kiện mới
+            Thêm lịch trình mới
           </button>
           <div className="mobile-only-add">
             <button onClick={() => setShowNLPModal(true)} className="btn-secondary">Thêm bằng văn bản</button>
@@ -120,7 +120,7 @@ const EventList = () => {
             <NLPInput onEventCreated={handleEventCreated} />
           </div>
           <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3>{selectedDate ? `Sự kiện cho ${(() => { const k = (typeof selectedDate === 'string') ? (new Date(selectedDate)).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : (new Date(selectedDate)).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }); const [y,m,day] = k.split('-'); return `${day}-${m}-${y}` })()}` : 'Chọn một ngày trên lịch để xem sự kiện'}</h3>
+            <h3>{selectedDate ? `Lịch trình cho ${(() => { const k = (typeof selectedDate === 'string') ? (new Date(selectedDate)).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : (new Date(selectedDate)).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }); const [y,m,day] = k.split('-'); return `${day}-${m}-${y}` })()}` : 'Chọn một ngày trên lịch để xem lịch trình'}</h3>
             {selectedDate && <button className="btn-secondary" onClick={() => setSelectedDate(null)}>Xóa bộ lọc</button>}
           </div>
 
@@ -153,8 +153,8 @@ const EventList = () => {
               if (listToShow.length === 0) {
                 return (
                   <div className="empty-state">
-                    <p>Không có sự kiện cho ngày đã chọn.</p>
-                  </div>
+                      <p>Không có lịch trình cho ngày đã chọn.</p>
+                    </div>
                 )
               }
 
@@ -167,8 +167,8 @@ const EventList = () => {
                 />
               ));
             })() : (
-              <div className="empty-state">
-                <p>Vui lòng chọn một ngày trên lịch để xem các sự kiện.</p>
+                <div className="empty-state">
+                <p>Vui lòng chọn một ngày trên lịch để xem các lịch trình.</p>
               </div>
             )}
           </div>
@@ -200,7 +200,7 @@ const EventList = () => {
       <ConfirmationModal
         isOpen={!!deleteCandidate}
         title="Xác nhận xóa"
-        message={`Bạn có chắc muốn xóa sự kiện "${deleteCandidate?.name}"?`}
+        message={`Bạn có chắc muốn xóa lịch trình "${deleteCandidate?.name}"?`}
         onConfirm={performDelete}
         onCancel={() => setDeleteCandidate(null)}
         confirmLabel="Xóa"

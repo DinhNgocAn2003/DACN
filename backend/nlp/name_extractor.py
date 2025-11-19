@@ -24,4 +24,4 @@ def extract_event_name(text: str, time_info: Dict) -> str:
     if cleaned:
         cleaned = cleaned[0].upper() + cleaned[1:]
 
-    return cleaned if cleaned else 'Sự kiện mới'
+    return cleaned if cleaned else 'Lịch trình mới'

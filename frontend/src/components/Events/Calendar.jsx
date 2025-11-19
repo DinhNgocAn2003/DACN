@@ -198,14 +198,14 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
           <div className="modal-overlay" onClick={() => setModalDate(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-              <h3>Sự kiện cho {formatDateVN(modalDate)}</h3>
+              <h3>Lịch trình cho {formatDateVN(modalDate)}</h3>
                 <button className="close-btn" onClick={() => setModalDate(null)}>&times;</button>
               </div>
               <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
                 {(() => {
                 const key = formatDateKeyVN(modalDate);
                 let dayEvents = eventsByDate[key] || [];
-                  if (dayEvents.length === 0) return <p>Không có sự kiện.</p>;
+                  if (dayEvents.length === 0) return <p>Không có lịch trình.</p>;
                   dayEvents = [...dayEvents].sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
                   return dayEvents.map(ev => (
                     <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
