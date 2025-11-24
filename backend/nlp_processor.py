@@ -14,12 +14,12 @@ class NLPProcessor:
         try:
             original_text = text
 
-            # preprocess (expand abbreviations, produce normalized & no-accent variants)
+            # Tiền xử lý: mở rộng viết tắt, tạo bản chuẩn hóa và bản không dấu
             pre = normalize_text(text)
             working = pre.get('normalized')
-            # strip some punctuation for easier regex matching
+            # Loại bỏ một số dấu câu để regex hoạt động dễ dàng hơn
             working = re.sub(r"[.,;!?\"']", '', working)
-
+            # Trích xuất thông tin
             minutes, text_no_reminder = extract_reminder(working)
             location, text_no_location = extract_location(text_no_reminder)
             time_info = extract_time(text_no_location)
@@ -27,6 +27,7 @@ class NLPProcessor:
 
             start_dt, end_dt = build_datetime(time_info)
 
+            # Tập hợp kết quả trả về dưới dạng dict chuẩn
             result = {
                 'event_name': event_name,
                 'start_time': start_dt.strftime('%Y-%m-%d %H:%M:%S'),

@@ -7,8 +7,8 @@ def extract_event_name(text: str, time_info: Dict) -> str:
     for raw_match in time_info.get('raw_matches', []):
         cleaned = cleaned.replace(raw_match, '')
 
-    # Remove time-related keywords; include common non-diacritic variants so inputs
-    # like 'nay' (without accent) are also handled.
+    # Loại bỏ các từ khóa liên quan tới thời gian; bao gồm các dạng không dấu
+    # để các đầu vào như 'nay' (không dấu) cũng được xử lý.
     time_keywords = [
         r'\b(?:vào|lúc|từ|đến|ngày|thời gian|khoảng|này|nay|kia)\b',
         r'\b(?:sáng|sang|chiều|chieu|tối|toi|trưa|trua|đêm|dem)\b',

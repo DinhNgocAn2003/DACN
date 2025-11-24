@@ -1,0 +1,34 @@
+# ==============================
+# Frontend (npm) dependencies
+# These are NOT Python packages!
+# Install inside the 'frontend' folder
+# ==============================
+
+# Dependencies:
+#   axios@^1.13.2
+#   react@^19.2.0
+#   react-dom@^19.2.0
+#   react-router-dom@^7.9.5
+
+# DevDependencies:
+#   @eslint/js@^9.39.1
+#   @types/react@^19.2.2
+#   @types/react-dom@^19.2.2
+#   @vitejs/plugin-react-swc@^4.2.1
+#   eslint@^9.39.1
+#   eslint-plugin-react-hooks@^5.2.0
+#   eslint-plugin-react-refresh@^0.4.24
+#   globals@^16.5.0
+#   vite@^7.2.2
+#   concurrently@^8.2.0
+
+# ==============================
+# Frontend installation commands (PowerShell / Terminal)
+# ==============================
+# cd frontend
+# npm install
+# npm run dev   # to start the dev server
+
+# Notes:
+# - Use Node.js LTS (18.x or 20.x) for compatibility.
+# - If npm install fails, delete node_modules and package-lock.json first.

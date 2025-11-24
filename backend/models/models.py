@@ -6,12 +6,6 @@ from sqlalchemy import Column, String
 
 
 class User(SQLModel, table=True):
-    """Model mapped to existing `users` table in the DB.
-
-    The database currently stores the password in a column named `password`.
-    To keep the API using the attribute name `password_hash`, map that
-    attribute to the `password` column via `sa_column`.
-    """
     __tablename__ = "users"
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -32,5 +26,9 @@ class Event(SQLModel, table=True):
     start_time: datetime
     end_time: Optional[datetime] = None
     location: Optional[str] = None
+    # time_reminder stored as minutes before start_time (integer). If None, no reminder.
     time_reminder: Optional[int] = None
+    # reminder_sent indicates whether the reminder email was already sent
+    reminder_sent: bool = False
+    reminder_sent_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -16,13 +16,15 @@ except ImportError:
 
 router = APIRouter()
 
-# Password hashing
+# Endpoints quản lý người dùng: tạo, đăng ký, đăng nhập, liệt kê, lấy theo username
+
+# Băm mật khẩu
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Simple JWT settings (for dev). In production, load secret from env/secure store.
+# Cấu hình JWT (dev). Trong production, lấy secret từ biến môi trường
 SECRET_KEY = "dev-secret-change-this"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 ngày
 
 
 class LoginRequest(BaseModel):
@@ -31,13 +33,7 @@ class LoginRequest(BaseModel):
 
 
 def add_cors_headers(response, request: Request = None):
-    """Helper to add a sensible Access-Control-Allow-Origin header for dev.
-
-    Use the request Origin when present so both http://localhost:5173 and
-    http://127.0.0.1:5173 (or other dev variants) are accepted by browsers.
-    If no request is provided, leave the response as-is and rely on global
-    middleware to set headers.
-    """
+    """Thêm header CORS phù hợp cho môi trường dev (ngắn gọn)."""
     try:
         if request is not None:
             origin = request.headers.get("origin")
@@ -50,8 +46,9 @@ def add_cors_headers(response, request: Request = None):
 
 
 @router.post("/")
+# Tạo user mới
 def create_user(user: UserCreate, session: Session = Depends(get_session), request: Request = None):
-    """Create a new user. Password will be hashed before storing."""
+    """Tạo user mới. Mật khẩu được băm trước khi lưu."""
     try:
         # Kiểm tra username đã tồn tại chưa
         existing_user = session.exec(select(User).where(User.username == user.username)).first()
@@ -71,26 +68,21 @@ def create_user(user: UserCreate, session: Session = Depends(get_session), reque
             )
             return add_cors_headers(response, request)
 
-        # Always pre-hash the password with SHA-256 hex digest before passing
-        # to bcrypt. This avoids bcrypt's 72-byte input limit and is a common
-        # safe strategy (we still store bcrypt(hash) so verification uses
-        # bcrypt as usual). This is backwards-compatible with older users
-        # because login verification checks both raw and pre-hash forms.
+        # Luôn pre-hash bằng SHA-256 trước khi đưa cho bcrypt để tránh giới hạn 72 bytes
+        # Lưu bcrypt(pre_hashed) và so sánh khi đăng nhập.
         if not getattr(user, "password", None):
             response = JSONResponse(status_code=400, content={"detail": "Password is required"})
             return add_cors_headers(response, request)
         
-        # Normalize password input to bytes (UTF-8), then compute SHA-256
-        # hex digest string. We hash the hex digest string with bcrypt.
-        # This avoids bcrypt's 72-byte input limit and is deterministic.
+        # Chuyển password sang bytes (UTF-8) rồi lấy SHA-256 hexdigest
+        # Sau đó băm hexdigest bằng bcrypt.
         pwd_bytes = user.password.encode("utf-8") if isinstance(user.password, str) else user.password
 
-        # Use hexdigest (64 hex chars) so bcrypt input length is small and
-        # stable across platforms/encodings. Pass a str (not bytes) to passlib.
+        # Dùng hexdigest (64 ký tự) để đảm bảo độ dài nhỏ và ổn định.
         pre_hashed = hashlib.sha256(pwd_bytes).hexdigest()
 
         try:
-            # passlib expects a str; give it the hex string
+            # passlib nhận str; truyền hex string
             hashed = pwd_context.hash(pre_hashed)
         except Exception as e:
             response = JSONResponse(status_code=400, content={"detail": f"Invalid password: {str(e)}"})
@@ -101,7 +93,7 @@ def create_user(user: UserCreate, session: Session = Depends(get_session), reque
         session.commit()
         session.refresh(u)
 
-        # Do not return password hash to the client
+        # Không trả password hash cho client
         response = JSONResponse(
             status_code=200,
             content={"id": u.id, "username": u.username, "email": u.email, "is_verified": u.is_verified}
@@ -117,17 +109,19 @@ def create_user(user: UserCreate, session: Session = Depends(get_session), reque
 
 
 @router.post("/register")
+# Đăng ký (alias)
 def register(user: UserCreate, session: Session = Depends(get_session), request: Request = None):
-    """Alias for create_user at /register to match frontend expectations."""
+    """Alias cho /register (để frontend tương thích)."""
     return create_user(user, session, request)
 
 
 @router.post("/login")
+# Đăng nhập và trả JWT
 def login(payload: LoginRequest, session: Session = Depends(get_session), request: Request = None):
-    """Authenticate user with username and password, return a JWT and basic user info."""
+    """Xác thực user, trả JWT và thông tin cơ bản."""
     try:
         user = session.exec(select(User).where(User.username == payload.username)).first()
-        # Debugging info (ASCII-safe)
+        # Thông tin debug (ASCII-safe)
         try:
             print(f"Login attempt for username={payload.username}")
         except Exception:
@@ -140,16 +134,15 @@ def login(payload: LoginRequest, session: Session = Depends(get_session), reques
             return add_cors_headers(response, request)
         stored = user.password_hash
         try:
-            # Print a short hint about stored password format (do not print full hash)
+            # In ra gợi ý ngắn về định dạng hash (không in toàn bộ hash)
             prefix = (stored[:4] + '...') if isinstance(stored, str) else str(type(stored))
             print(f"Found user id={user.id} stored_prefix={prefix}")
         except Exception:
             pass
         verified = False
 
-        # If stored looks like a bcrypt hash (starts with $2), verify the
-        # SHA-256 hex-digest form only. Avoid passing raw password to bcrypt
-        # because bcrypt enforces a 72-byte limit and will raise on long inputs.
+        # Nếu stored là bcrypt (bắt đầu bằng $2), so sánh với SHA-256 hexdigest
+        # Tránh truyền raw password vào bcrypt vì giới hạn 72 bytes.
         if isinstance(stored, str) and stored.startswith("$2"):
             try:
                 pre = hashlib.sha256(payload.password.encode('utf-8')).hexdigest()
@@ -158,8 +151,7 @@ def login(payload: LoginRequest, session: Session = Depends(get_session), reques
             except Exception:
                 verified = False
         else:
-            # Stored password is likely plain text or a simple hash
-            # First try direct equality (plaintext), then try sha256 hex match.
+            # Nếu không phải bcrypt, thử so sánh trực tiếp rồi thử sha256 hexdigest
             if payload.password == stored:
                 verified = True
             else:
@@ -209,10 +201,11 @@ def login(payload: LoginRequest, session: Session = Depends(get_session), reques
 
 
 @router.get("/")
+# Liệt kê người dùng (đã lọc dữ liệu nhạy cảm)
 def list_users(session: Session = Depends(get_session), request: Request = None):
     try:
         users = session.exec(select(User)).all()
-        # Return sanitized list
+        # Trả về danh sách user đã loại bỏ thông tin nhạy cảm
         response = JSONResponse(
             status_code=200,
             content=[{"id": u.id, "username": u.username, "email": u.email, "is_verified": u.is_verified} for u in users]
@@ -227,6 +220,7 @@ def list_users(session: Session = Depends(get_session), request: Request = None)
 
 
 @router.get("/{username}")
+# Lấy thông tin user theo username
 def get_user_by_username(username: str, session: Session = Depends(get_session), request: Request = None):
     try:
         user = session.exec(select(User).where(User.username == username)).first()

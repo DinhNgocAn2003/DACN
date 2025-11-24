@@ -2,7 +2,7 @@ import re
 import unicodedata
 from typing import Dict
 
-# small abbreviation map — extend as needed
+# Bảng viết tắt nhỏ — mở rộng khi cần
 ABBREVIATIONS = {
     r"\bo\b": 'ở',
     r"\bphong\b": 'phòng',
@@ -25,6 +25,7 @@ ABBREVIATIONS = {
 
 
 def remove_diacritics(s: str) -> str:
+    """Loại bỏ dấu Unicode (trả về chuỗi không dấu)."""
     nfkd = unicodedata.normalize('NFKD', s)
     return ''.join([c for c in nfkd if not unicodedata.combining(c)])
 
@@ -41,10 +42,10 @@ def normalize_text(s: str) -> Dict[str, str]:
         return {'raw': '', 'normalized': '', 'no_accents': ''}
     raw = s.strip()
     normalized = raw.lower()
-    # basic punctuation cleanup
+    # Dọn một số ký tự xuống dòng/ khoảng trắng cơ bản
     normalized = re.sub(r"[\t\n\r]+", ' ', normalized)
     normalized = re.sub(r"\s+", ' ', normalized)
-    # expand simple abbreviations
+    # Mở rộng các viết tắt đơn giản
     normalized = expand_abbreviations(normalized)
     no_accents = remove_diacritics(normalized)
     return {'raw': raw, 'normalized': normalized, 'no_accents': no_accents}

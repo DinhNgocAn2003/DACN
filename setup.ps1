@@ -1,21 +1,21 @@
 <#
-setup.ps1 - Setup project development environment on Windows (PowerShell)
+setup.ps1 - Thiết lập môi trường phát triển trên Windows (PowerShell)
 
-What it does:
-- Checks for Python and Node/NPM on PATH and prints helpful hints if missing
-- Creates a virtual environment at `./.venv` (project root)
-- Upgrades pip/setuptools/wheel inside the venv
-- Installs Python dependencies from `backend/requirements.txt` using the venv Python
-- Runs `npm install` inside `frontend` to install frontend deps
+Nội dung:
+- Kiểm tra Python và Node/NPM trên PATH, in hướng dẫn nếu thiếu
+- Tạo virtual environment tại `./.venv`
+- Nâng cấp pip/setuptools/wheel trong venv
+- Cài phụ thuộc Python từ `backend/requirements.txt`
+- Chạy `npm install` trong `frontend` nếu có Node/npm
 
-Usage (PowerShell):
-  .\setup.ps1
+Cách dùng (PowerShell):
+    .\setup.ps1
 
-Note: If PowerShell's execution policy prevents running, you can run this file with:
-  powershell -ExecutionPolicy Bypass -File .\setup.ps1
+Nếu chính sách PowerShell chặn chạy file, chạy:
+    powershell -ExecutionPolicy Bypass -File .\setup.ps1
 #>
 
-Write-Host "Starting project setup..." -ForegroundColor Cyan
+Write-Host "Bắt đầu thiết lập dự án..." -ForegroundColor Cyan
 
 function Abort($msg) {
     Write-Host $msg -ForegroundColor Red
@@ -42,7 +42,7 @@ if (-not $nodeCmd -or -not $npmCmd) {
     $skipFrontend = $false
 }
 
-# Create virtual environment
+# Tạo virtual environment
 if (-not (Test-Path -Path .\.venv)) {
     Write-Host "Creating virtual environment at .\.venv" -ForegroundColor Cyan
     python -m venv .venv
@@ -70,10 +70,10 @@ if (-not $skipFrontend) {
     npm install
     Pop-Location
 } else {
-    Write-Host "Skipping frontend npm install (Node/npm missing)." -ForegroundColor Yellow
+    Write-Host "Bỏ qua npm install cho frontend (thiếu Node/npm)." -ForegroundColor Yellow
 }
 
-Write-Host "Setup complete. To activate the venv in PowerShell run:`n  .\.venv\Scripts\Activate.ps1`" -ForegroundColor Green
-Write-Host "Or call venv python directly: .\.venv\Scripts\python.exe -m uvicorn main:app --reload" -ForegroundColor Green
+Write-Host "Thiết lập hoàn tất. Kích hoạt venv bằng:`n  .\.venv\Scripts\Activate.ps1`" -ForegroundColor Green
+Write-Host "Hoặc dùng python trong venv: .\.venv\Scripts\python.exe -m uvicorn main:app --reload" -ForegroundColor Green
 
 exit 0

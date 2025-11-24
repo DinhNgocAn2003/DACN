@@ -2,10 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api import users, events, nlp
 from db import init_db
+import uvicorn
+
+# Scheduler reminders
+from reminders import start_scheduler, stop_scheduler
 
 app = FastAPI(title="Event Assistant API")
 
-# CORS configuration
+# Cấu hình CORS
 ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     "http://127.0.0.1:5173",
@@ -29,36 +33,30 @@ app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(events.router, prefix="/events", tags=["events"])
 app.include_router(nlp.router, prefix="/nlp", tags=["nlp"])
 
-@app.get("/")
-async def root():
-    return {"status": "ok", "message": "Event Assistant API is running"}
 
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "Event Assistant API"}
+@app.on_event("startup")
+def _start_bg_tasks():
+    # Bắt đầu scheduler background để kiểm tra và gửi email nhắc
+    try:
+        start_scheduler()
+    except Exception as e:
+        print(f"Failed to start reminder scheduler: {e}")
 
-# Debug endpoint để kiểm tra tất cả routes
-@app.get("/debug/routes")
-async def debug_routes():
-    routes = []
-    for route in app.routes:
-        route_info = {
-            "path": getattr(route, "path", None),
-            "name": getattr(route, "name", None),
-            "methods": list(getattr(route, "methods", [])) if hasattr(route, "methods") else None
-        }
-        routes.append(route_info)
-    return {"routes": routes}
 
-# Xử lý preflight OPTIONS requests
-@app.options("/{path:path}")
-async def options_handler(path: str):
-    return {"message": "OK"}
+@app.on_event("shutdown")
+def _stop_bg_tasks():
+    try:
+        stop_scheduler()
+    except Exception:
+        pass
+
+# @app.get("/")
+# async def root():
+#     return {"status": "ok", "message": "Event Assistant API is running"}
+
+# @app.get("/health")
+# async def health_check():
+#     return {"status": "healthy", "service": "Event Assistant API"}
 
 if __name__ == "__main__":
-    import uvicorn
-    # print("🚀 Starting Event Assistant API on http://0.0.0.0:8000")
-    # print("🔧 CORS enabled for:")
-    # for origin in ALLOWED_ORIGINS:
-        # print(f"   - {origin}")
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

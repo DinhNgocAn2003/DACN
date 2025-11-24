@@ -5,6 +5,8 @@ from models.schemas import TextRequest
 router = APIRouter()
 processor = NLPProcessor()
 
+# Endpoint NLP: parse text and extract event fields
+
 @router.post("/parse")
 async def parse_text(request: TextRequest):
     """

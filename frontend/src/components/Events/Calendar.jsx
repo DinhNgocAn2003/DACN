@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 
-// Simple calendar month view that shows event counts per day.
+// Lịch tháng đơn giản, hiển thị số sự kiện mỗi ngày.
 const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDeleteEvent, onCreateEvent }) => {
   const dateKeyVN = (d) => {
     if (!d) return null;
@@ -24,7 +24,7 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
   const [modalDate, setModalDate] = useState(null);
 
 
-  // Helper to format date keys and display dates in VN timezone
+  // Hàm trợ giúp định dạng key ngày theo múi giờ VN
   const formatDateKeyVN = (d) => {
     if (!d) return null;
     const dateObj = (typeof d === 'string') ? new Date(d) : d;
@@ -163,7 +163,7 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
                     return;
                   }
                 } catch (e) {}
-                // otherwise, if no parent handler provided, open modal as fallback
+                // nếu không có handler từ parent, mở modal làm phương án dự phòng
                 if (!onSelectDate) setModalDate(dayDate);
               };
 
@@ -191,7 +191,7 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
           ))}
       </div>
 
-      {/* Mobile toolbar removed; mobile actions are handled by parent (EventList) */}
+      {/* Toolbar mobile bỏ (parent/EventList xử lý hành động trên mobile) */}
 
         {/* Modal showing events for clicked date when modalDate is set */}
         {modalDate && (
