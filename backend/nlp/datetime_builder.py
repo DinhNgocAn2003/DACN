@@ -68,6 +68,7 @@ def build_datetime(time_info: Dict) -> Tuple[datetime, Optional[datetime]]:
 
             base_date = (now + timedelta(days=days_ahead)).date()
     elif re.match(r'\d{1,2}[/-]\d{1,2}', date_text):
+        # Thử parse các định dạng dd/mm hoặc dd-mm (có thể có năm)
         try:
             parts = re.split(r'[/-]', date_text)
             day = int(parts[0])
@@ -77,11 +78,30 @@ def build_datetime(time_info: Dict) -> Tuple[datetime, Optional[datetime]]:
                 year = int(parts[2])
                 if year < 100:
                     year += 2000
+            # Nếu ngày-tháng không hợp lệ -> sẽ ném ValueError
             base_date = datetime(year, month, day).date()
             if base_date < now.date():
                 base_date = datetime(year + 1, month, day).date()
-        except:
-            base_date = now.date()
+        except Exception as e:
+            # Propagate một lỗi rõ ràng để caller có thể báo cho người dùng
+            raise ValueError(f"Ngày không tồn tại hoặc không hợp lệ: '{date_text}'") from e
+    elif re.search(r"\d{1,2}\s*(?:tháng|thang)\s*\d{1,2}", date_text):
+        # Dạng "5 tháng 12" hoặc "ngày 5 tháng 12" (có thể có năm)
+        try:
+            parts = re.findall(r"(\d{1,2})", date_text)
+            if len(parts) >= 2:
+                day = int(parts[0])
+                month = int(parts[1])
+                year = now.year
+                if len(parts) >= 3:
+                    year = int(parts[2])
+                    if year < 100:
+                        year += 2000
+                base_date = datetime(year, month, day).date()
+                if base_date < now.date():
+                    base_date = datetime(year + 1, month, day).date()
+        except Exception as e:
+            raise ValueError(f"Ngày không tồn tại hoặc không hợp lệ: '{date_text}'") from e
 
     time_start = time_info.get('time_start')
     time_end = time_info.get('time_end')

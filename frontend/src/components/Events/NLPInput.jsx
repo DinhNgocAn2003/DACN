@@ -34,7 +34,7 @@ const NLPInput = ({ onEventCreated }) => {
       const data = response.data || {};
 
       if (!data.start_time) {
-        const msg = 'Phân tích không thành công, vui lòng nhập đầy đủ thông tin hơn (thời gian bắt đầu)';
+        const msg = 'Phân tích không thành công, vui lòng nhập thông tin đầy đủ và chính xác hơn hơn';
         setError(msg);
         try { showToast({ type: 'error', message: msg }); } catch (e) {}
         setParsedEvent(null);

@@ -18,6 +18,8 @@ def extract_time(text: str) -> Dict[str, Any]:
         time_info['time_period'] = m_period.group(1).lower()
 
     date_patterns = [
+        # các dạng 'ngày 5 tháng 12' hoặc '5 tháng 12' (có thể có năm)
+        r'(?:ngày\s*)?\d{1,2}\s*(?:tháng|thang)\s*\d{1,2}(?:\s*\d{2,4})?',
         r'(\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?)',
         # Prefer matching weekday with week context first (e.g. "thứ bảy tuần sau")
         r'(thứ\s*(?:\d|hai|ba|tư|năm|sáu|bảy)(?:\s+tuần\s+(?:sau|này|tới))?)',
@@ -29,7 +31,12 @@ def extract_time(text: str) -> Dict[str, Any]:
     for pattern in date_patterns:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            time_info['date_text'] = match.group(1)
+            # Nếu pattern có group(1) trả về cái nhóm, còn không thì dùng toàn bộ match
+            try:
+                date_val = match.group(1)
+            except IndexError:
+                date_val = match.group(0)
+            time_info['date_text'] = date_val
             time_info['raw_matches'].append(match.group(0))
             break
 
@@ -59,14 +66,24 @@ def extract_time(text: str) -> Dict[str, Any]:
             time_matches.append(time_str)
             time_info['raw_matches'].append(match.group(0))
 
-    if time_matches:
-        time_info['time_start'] = time_matches[0]
-        if len(time_matches) > 1:
-            time_info['time_end'] = time_matches[1]
+    # Loại bỏ các time match trùng lặp (ví dụ '14:00' có thể được match bởi cả '14:00' và 'lúc 14')
+    unique_times: List[str] = []
+    for tm in time_matches:
+        if tm not in unique_times:
+            unique_times.append(tm)
+
+    if unique_times:
+        time_info['time_start'] = unique_times[0]
+        if len(unique_times) > 1:
+            time_info['time_end'] = unique_times[1]
 
     from_to_match = re.search(r'từ\s+(.+?)\s+đến\s+(.+?)(?=\s|$)', text, re.IGNORECASE)
     if from_to_match:
         time_info['time_start'] = from_to_match.group(1).strip()
         time_info['time_end'] = from_to_match.group(2).strip()
+    # Nếu do một vài lý do chỉ có time_end mà không có time_start, coi đó là time_start
+    if time_info.get('time_end') and not time_info.get('time_start'):
+        time_info['time_start'] = time_info['time_end']
+        time_info['time_end'] = None
 
     return time_info

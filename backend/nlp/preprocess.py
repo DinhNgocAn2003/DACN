@@ -25,7 +25,7 @@ ABBREVIATIONS = {
 
 
 def remove_diacritics(s: str) -> str:
-    """Loại bỏ dấu Unicode (trả về chuỗi không dấu)."""
+    # Loại bỏ dấu Unicode (trả về chuỗi không dấu).
     nfkd = unicodedata.normalize('NFKD', s)
     return ''.join([c for c in nfkd if not unicodedata.combining(c)])
 

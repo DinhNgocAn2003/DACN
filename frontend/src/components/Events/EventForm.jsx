@@ -141,7 +141,17 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
             />
           </div>
 
+
           <div className="form-group">
+            <label>Địa điểm</label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+            />
+          </div>
+ <div className="form-group">
             <label>Nhắc nhở trước (phút)</label>
             <input
               type="number"
@@ -153,17 +163,6 @@ const EventForm = ({ event, initialDate, onClose, onSuccess }) => {
               disabled={!formData.start_time}
             />
           </div>
-
-          <div className="form-group">
-            <label>Địa điểm</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-            />
-          </div>
-
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary">
               Huỷ

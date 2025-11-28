@@ -14,18 +14,39 @@ class NLPProcessor:
         try:
             original_text = text
 
-            # Tiền xử lý: mở rộng viết tắt, tạo bản chuẩn hóa và bản không dấu
+            # Tiền xử lý: tạo bản chuẩn hóa (lower/no-accent) và bản raw
             pre = normalize_text(text)
-            working = pre.get('normalized')
+            working_norm = pre.get('normalized')
             # Loại bỏ một số dấu câu để regex hoạt động dễ dàng hơn
-            working = re.sub(r"[.,;!?\"']", '', working)
-            # Trích xuất thông tin
-            minutes, text_no_reminder = extract_reminder(working)
-            location, text_no_location = extract_location(text_no_reminder)
-            time_info = extract_time(text_no_location)
-            event_name = extract_event_name(text_no_location, time_info)
+            working_norm = re.sub(r"[.,;!?\"']", '', working_norm)
 
-            start_dt, end_dt = build_datetime(time_info)
+            # Trích xuất location từ bản raw (giữ nguyên chữ hoa/chữ thường)
+            raw_for_location = re.sub(r"[.,;!?\"']", '', pre.get('raw'))
+            location, _ = extract_location(raw_for_location)
+            # Nếu tìm thấy location, loại bỏ cụm đó khỏi bản normalized để tránh ảnh hưởng tới trích xuất thời gian
+            if location:
+                # Khi loại location khỏi bản normalized, xóa luôn tiền tố như 'tại', 'ở', 'chỗ', 'nơi'
+                # để tránh còn lại từ như 'tại' trong event_name.
+                try:
+                    prefix_pattern = r"(?:\b(?:tại|ở|chỗ|nơi)\b\s*)?"
+                    pattern = rf"{prefix_pattern}{re.escape(location.lower())}"
+                    working_norm = re.sub(pattern, '', working_norm, flags=re.IGNORECASE)
+                except Exception:
+                    # Fallback: xóa location và sau đó loại tiền tố chung nếu còn
+                    working_norm = working_norm.replace(location.lower(), '')
+                    working_norm = re.sub(r"(?:\b(?:tại|ở|chỗ|nơi)\b\s*)", '', working_norm, flags=re.IGNORECASE)
+                working_norm = re.sub(r"\s+", ' ', working_norm).strip()
+
+            # Trích xuất reminder và phần còn lại dựa trên bản normalized
+            minutes, text_no_reminder = extract_reminder(working_norm)
+            time_info = extract_time(text_no_reminder)
+            event_name = extract_event_name(text_no_reminder, time_info)
+
+            # Xây dựng datetime — nếu có ngày không hợp lệ, build_datetime sẽ ném ValueError và ta báo về người dùng
+            try:
+                start_dt, end_dt = build_datetime(time_info)
+            except ValueError as e:
+                return {'error': str(e), 'success': False}
 
             # Tập hợp kết quả trả về dưới dạng dict chuẩn
             result = {
