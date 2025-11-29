@@ -1,39 +1,49 @@
 import os
+import sys
+import io
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from apscheduler.schedulers.background import BackgroundScheduler
 from sqlmodel import Session, select
+from dotenv import load_dotenv
 
-# Import engine và models từ module nội bộ
 from db import engine
 from models import Event, User
 
+# Cấu hình encoding
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 # ======= CẤU HÌNH SMTP =======
+load_dotenv()
 SMTP_HOST = os.getenv("SMTP_HOST")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+# Chỉ dùng cổng 465 (implicit SSL) cho SMTP
+SMTP_PORT = 465
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASS = os.getenv("SMTP_PASS")
-FROM_EMAIL = os.getenv("FROM_EMAIL") or SMTP_USER
+FROM_EMAIL = os.getenv("FROM_EMAIL")
 
-# Khoảng thời gian (giây) để job kiểm tra reminder
 REMINDER_INTERVAL = int(os.getenv("REMINDER_INTERVAL", "60"))
-
 
 _scheduler: Optional[BackgroundScheduler] = None
 
 
-def _send_email_smtp(to_email: str, subject: str, body: str) -> None:
-    """Gửi email bằng SMTP; nếu không có cấu hình thì ghi log thay vì gửi.
-
-    Hàm này tránh ném lỗi để scheduler không bị dừng vì vấn đề transport.
-    """
-    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
-        print(f"[reminder] SMTP chưa cấu hình. Thay vì gửi, in log cho {to_email}: {subject}")
-        print(body)
-        return
+def _send_email_smtp(to_email: str, subject: str, body: str) -> bool:
+    # Gửi email bằng SMTP
+    print(f"[debug] SMTP config: {SMTP_HOST}:{SMTP_PORT}, user: {SMTP_USER}")
+    
+    if not all([SMTP_HOST, SMTP_USER, SMTP_PASS]):
+        print(f"[reminder] SMTP chưa cấu hình đầy đủ")
+        return False
 
     msg = EmailMessage()
     msg["From"] = FROM_EMAIL
@@ -42,24 +52,43 @@ def _send_email_smtp(to_email: str, subject: str, body: str) -> None:
     msg.set_content(body)
 
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as s:
-            try:
-                s.starttls()
-            except Exception:
-                pass
-            s.login(SMTP_USER, SMTP_PASS)
-            s.send_message(msg)
-    except Exception as exc:
-        print(f"[reminder] Lỗi SMTP khi gửi tới {to_email}: {exc}")
+        # Xử lý kết nối SMTP
+        if SMTP_PORT == 465:
+            # Port 465 dùng SSL implicit
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=30) as server:
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+        else:
+            # Port 587 hoặc 25
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
+                # Thử STARTTLS nếu server hỗ trợ
+                try:
+                    server.starttls()
+                except smtplib.SMTPNotSupportedError:
+                    print("[reminder] Server không hỗ trợ STARTTLS, tiếp tục không TLS")
+                except Exception as e:
+                    print(f"[reminder] Lỗi STARTTLS: {e}, tiếp tục không TLS")
+                
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+
+        print(f"[reminder] Đã gửi email tới {to_email}: {subject}")
+        return True
+        
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"[reminder] Lỗi xác thực SMTP: {e}")
+        print("[reminder] Kiểm tra username/password")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"[reminder] Lỗi SMTP: {e}")
+        return False
+    except Exception as e:
+        print(f"[reminder] Lỗi kết nối: {e}")
+        return False
 
 
 def _get_pending_reminders(session: Session, before_dt: datetime) -> List[Dict[str, Any]]:
-    """Lấy danh sách event cần gửi reminder trước `before_dt`.
-
-    Tiêu chí:
-    - `time_reminder` không phải None (số phút trước start_time)
-    - `reminder_sent_at` là NULL (chưa gửi)
-    """
+    # Lấy danh sách event cần gửi reminder
     stmt = select(Event).where(Event.time_reminder != None, Event.reminder_sent_at == None)
     events = session.exec(stmt).all()
 
@@ -77,14 +106,13 @@ def _get_pending_reminders(session: Session, before_dt: datetime) -> List[Dict[s
 
                 pending.append({"event": ev, "user": user, "reminder_time": reminder_time})
         except Exception:
-            # bỏ qua event nếu có dữ liệu sai
             continue
 
     return pending
 
 
 def _mark_reminder_sent(session: Session, event: Event, sent_at: datetime):
-    """Đánh dấu event đã gửi reminder: đặt `reminder_sent_at` và nếu có `reminder_sent` thì cũng đặt True."""
+    # Đánh dấu event đã gửi reminder
     try:
         event.reminder_sent_at = sent_at
         if hasattr(event, "reminder_sent"):
@@ -97,26 +125,28 @@ def _mark_reminder_sent(session: Session, event: Event, sent_at: datetime):
 
 
 def _job_runner():
-    """Job chính chạy định kỳ: lấy danh sách pending và gửi email."""
-    now = datetime.utcnow()
+    # Job chính chạy định kỳ
+    now = datetime.now()
     with Session(engine) as session:
         reminders = _get_pending_reminders(session, now)
         for item in reminders:
             ev = item["event"]
             user = item["user"]
             try:
-                start_str = ev.start_time.strftime("%Y-%m-%d %H:%M") if ev.start_time else "Không rõ"
+                start_str = ev.start_time.strftime("%H:%M %d-%m-%Y") if ev.start_time else "Không rõ"
                 subject = f"Nhắc: {ev.event_name}"
                 body = (
                     f"Sự kiện '{ev.event_name}' sẽ bắt đầu lúc {start_str}.\n"
                     f"Địa điểm: {ev.location or 'Không rõ'}.\n"
                 )
 
-                _send_email_smtp(user.email, subject, body)
+                sent = _send_email_smtp(user.email, subject, body)
+                _mark_reminder_sent(session, ev, datetime.now())
 
-                _mark_reminder_sent(session, ev, datetime.utcnow())
-
-                print(f"[reminder] Đã gửi reminder cho event {ev.id} tới {user.email}")
+                if sent:
+                    print(f"[reminder] Đã gửi reminder cho event {ev.id} tới {user.email}")
+                else:
+                    print(f"[reminder] Gửi thất bại cho event {ev.id} tới {user.email}")
             except Exception as exc:
                 print(f"[reminder] Gửi thất bại cho event {getattr(ev,'id',None)}: {exc}")
 
@@ -145,7 +175,6 @@ def stop_scheduler():
 
 
 if __name__ == "__main__":
-    # Đoạn chạy nhanh để test manual
     start_scheduler(5)
     import time
     try:

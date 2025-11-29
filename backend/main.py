@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from api import users, events, nlp
 from db import init_db
 import uvicorn
-
-# Scheduler reminders
 from reminders import start_scheduler, stop_scheduler
 
 app = FastAPI(title="Event Assistant API")

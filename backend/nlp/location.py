@@ -6,7 +6,7 @@ def extract_location(text: str) -> Tuple[Optional[str], str]:
     time_lookahead = r"(?:lúc|vào|từ|đến|nhắc|báo|ngày|mai|hôm|mốt|chiều|tối|trưa|sáng|\d{1,2}[:h]|giờ|g)"
     patterns = [
         rf'(?:tại|ở|chỗ|nơi)\s+([^,\.\n!?]+?)(?=\s*$|\s+{time_lookahead})',
-        rf'(?:tại|ở|chỗ|nơi)\s+(.+?)(?=\s*$|\s+{time_lookahead})'
+        rf'(?:tại|ở|chỗ|nơi)\s+(.+?)(?=\s*$|\s+{time_lookahead})',
     ]
 
     for pattern in patterns:
