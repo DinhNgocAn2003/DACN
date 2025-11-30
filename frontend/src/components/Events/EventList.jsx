@@ -44,6 +44,35 @@ const EventList = () => {
     fetchEvents();
   }, []);
 
+
+  // Listen for global selection events from SearchBar
+  useEffect(() => {
+    const handler = (e) => {
+      const { event, isMobile } = e.detail || {};
+      if (!event) return;
+      try {
+        const dt = event.start_time ? new Date(event.start_time) : new Date();
+        // treat as mobile/tablet if either the SearchBar signaled it or viewport is narrow (<=992)
+        const viewportMobile = (typeof window !== 'undefined') && window.innerWidth <= 992;
+        if (isMobile || viewportMobile) {
+          // tablet/mobile: select date AND request calendar modal for that date
+          setSelectedDate(dt);
+          setCalendarModalDate(dt);
+        } else {
+          // desktop: select date in calendar
+          setSelectedDate(dt);
+        }
+      } catch (err) {
+        console.error('event:selected handler', err);
+      }
+    };
+    window.addEventListener('event:selected', handler);
+    return () => window.removeEventListener('event:selected', handler);
+  }, [events]);
+
+  // state to control calendar modal from search selection on mobile
+  const [calendarModalDate, setCalendarModalDate] = useState(null);
+
   const handleCreateEvent = () => {
     setEditingEvent(null);
     setShowForm(true);
@@ -112,6 +141,8 @@ const EventList = () => {
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onRequestDelete={(id, name) => setDeleteCandidate({ id, name })}
+            externalModalDate={calendarModalDate}
+            onCloseExternalModal={() => setCalendarModalDate(null)}
           />
         </div>
 

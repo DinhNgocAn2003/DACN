@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo,useEffect } from 'react';
 
 // Lịch tháng đơn giản, hiển thị số sự kiện mỗi ngày.
-const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDeleteEvent, onCreateEvent }) => {
+const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDeleteEvent, onCreateEvent, externalModalDate, onCloseExternalModal, onRequestDelete }) => {
   const dateKeyVN = (d) => {
     if (!d) return null;
     const dateObj = (typeof d === 'string') ? new Date(d) : d;
@@ -22,6 +22,18 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
   const [modalDate, setModalDate] = useState(null);
+
+  // If parent requests the calendar modal for a specific date (e.g., search on mobile), show it
+  useEffect(() => {
+    try {
+      if (externalModalDate) {
+        const d = (typeof externalModalDate === 'string') ? new Date(externalModalDate) : externalModalDate;
+        setModalDate(d);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [externalModalDate]);
 
 
   // Hàm trợ giúp định dạng key ngày theo múi giờ VN
@@ -195,7 +207,7 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
 
         {/* Modal showing events for clicked date when modalDate is set */}
         {modalDate && (
-          <div className="modal-overlay" onClick={() => setModalDate(null)}>
+          <div className="modal-overlay" onClick={() => { setModalDate(null); if (onCloseExternalModal) onCloseExternalModal(); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
               <h3>Lịch trình cho {formatDateVN(modalDate)}</h3>
@@ -237,7 +249,7 @@ const Calendar = ({ events = [], selectedDate, onSelectDate, onEditEvent, onDele
                         })()}</div>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        {onEditEvent && <button className="btn-edit" onClick={() => { setModalDate(null); onEditEvent(ev); }}>Sửa</button>}
+                          {onEditEvent && <button className="btn-edit" onClick={() => { setModalDate(null); if (onCloseExternalModal) onCloseExternalModal(); onEditEvent(ev); }}>Sửa</button>}
                         {onDeleteEvent && (
                           <button
                             className="btn-delete"

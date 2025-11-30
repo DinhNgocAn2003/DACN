@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { logout } from '../../services/auth';
 import ConfirmationModal from '../Common/ConfirmationModal';
 import { useToast } from '../Common/ToastProvider';
+import SearchBar from '../Common/SearchBar';
 
 const Header = ({ user, setUser }) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -23,6 +24,9 @@ const Header = ({ user, setUser }) => {
       <header className="header">
         <div className="header-content">
           <h1>Trợ lý lịch trình</h1>
+          <div style={{ marginLeft: '1rem', flex: 1 }}>
+            <SearchBar />
+          </div>
           <div className="user-info">
             <div>Xin chào,{user?.username} </div>
             <button onClick={handleLogout} className="btn-logout">

@@ -178,6 +178,61 @@ button {
   padding: 0 1rem;
 }
 
+/* Search bar styles (Header) */
+.searchbar { display: flex; align-items: center; max-width: 520px; width: 100%; }
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(16,24,40,0.08);
+  background: linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 6px 16px rgba(32,45,62,0.06);
+  font-size: 0.95rem;
+  transition: box-shadow 0.12s ease, transform 0.08s ease;
+}
+.search-input:focus { outline: none; box-shadow: 0 10px 30px rgba(102,126,234,0.12); transform: translateY(-1px); border-color: rgba(102,126,234,0.9); }
+
+.search-results {
+  margin-top: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.search-result-item {
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+  border-bottom: 1px solid rgba(15,23,42,0.04);
+  background: #fff;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+  will-change: transform, box-shadow;
+}
+.search-result-item:hover {
+  background: linear-gradient(90deg, #f8fbff 0%, #fff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(15,23,42,0.06);
+}
+.search-result-item:active { transform: translateY(-1px) scale(0.998); }
+.search-result-item .title { font-weight: 600; color: #0f172a; font-size: 0.95rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-result-item .meta { font-size: 0.8rem; color: #6b7280 }
+
+/* Left column (title + location) should take available space; time is compact on the right */
+.search-result-item > div:first-child { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.search-result-item > div:first-child .meta { margin-top: 3px; font-size: 0.78rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-result-item > .meta { margin-left: 8px; flex: 0 0 auto; min-width: 88px; text-align: right; color: #9aa3b2; font-size: 0.75rem }
+.search-results .no-results { padding: 10px 12px; color: #6b7280 }
+
+/* Make dropdown appear below header input aligned and constrained */
+.header .search-results { position: absolute; left: 1rem; right: 1rem; top: calc(100% + 12px); z-index: 1200; max-width: 520px; margin-left: auto; margin-right: auto; }
+
+@media (max-width: 992px) {
+  .searchbar { max-width: 100%; width: auto; }
+  .header .search-results { left: 12px; right: 12px; }
+}
+
 .header h1 {
   color: #667eea;
 }
