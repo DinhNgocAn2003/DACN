@@ -62,228 +62,81 @@ npm run dev:all
 - API routes có trong `backend/api/`.
 
 
-
-```
 DACN
-├─ backend
-│  ├─ .env
-│  ├─ api
-│  │  ├─ events.py
-│  │  ├─ nlp.py
-│  │  ├─ users.py
-│  │  └─ __pycache__
-│  │     ├─ events.cpython-311.pyc
-│  │     ├─ events.cpython-314.pyc
-│  │     ├─ nlp.cpython-311.pyc
-│  │     ├─ nlp.cpython-314.pyc
-│  │     ├─ users.cpython-311.pyc
-│  │     └─ users.cpython-314.pyc
-│  ├─ database.db
-│  ├─ db.py
-│  ├─ main.py
-│  ├─ models
-│  │  ├─ models.py
-│  │  ├─ schemas.py
-│  │  ├─ __init__.py
-│  │  └─ __pycache__
-│  │     ├─ models.cpython-311.pyc
-│  │     ├─ models.cpython-314.pyc
-│  │     ├─ schemas.cpython-311.pyc
-│  │     ├─ schemas.cpython-314.pyc
-│  │     ├─ __init__.cpython-311.pyc
-│  │     └─ __init__.cpython-314.pyc
-│  ├─ nlp
-│  │  ├─ datetime_builder.py
-│  │  ├─ location.py
-│  │  ├─ name_extractor.py
-│  │  ├─ preprocess.py
-│  │  ├─ reminder.py
-│  │  ├─ time_extractor.py
-│  │  └─ __pycache__
-│  │     ├─ datetime_builder.cpython-311.pyc
-│  │     ├─ datetime_builder.cpython-314.pyc
-│  │     ├─ location.cpython-311.pyc
-│  │     ├─ location.cpython-314.pyc
-│  │     ├─ name_extractor.cpython-311.pyc
-│  │     ├─ name_extractor.cpython-314.pyc
-│  │     ├─ preprocess.cpython-311.pyc
-│  │     ├─ preprocess.cpython-314.pyc
-│  │     ├─ reminder.cpython-311.pyc
-│  │     ├─ reminder.cpython-314.pyc
-│  │     ├─ time_extractor.cpython-311.pyc
-│  │     └─ time_extractor.cpython-314.pyc
-│  ├─ nlp_processor.py
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ reminders.py
-│  ├─ requirements.txt
-│  ├─ scripts
-│  │  ├─ debugmail.py
-│  │  ├─ run_nlp_test.py
-│  │  └─ __pycache__
-│  │     └─ test_reminder.cpython-314.pyc
-│  └─ __pycache__
-│     ├─ db.cpython-311.pyc
-│     ├─ db.cpython-314.pyc
-│     ├─ main.cpython-311.pyc
-│     ├─ main.cpython-314.pyc
-│     ├─ models.cpython-311.pyc
-│     ├─ nlp_processor.cpython-311.pyc
-│     ├─ nlp_processor.cpython-314.pyc
-│     ├─ reminders.cpython-314.pyc
-│     ├─ reminders_clean.cpython-314.pyc
-│     └─ __init__.cpython-311.pyc
-├─ frontend
-│  ├─ .env
-│  ├─ eslint.config.js
-│  ├─ index.html
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ public
-│  │  └─ vite.svg
-│  ├─ requirement.txt
-│  ├─ src
-│  │  ├─ App.jsx
-│  │  ├─ assets
-│  │  │  └─ react.svg
-│  │  ├─ components
-│  │  │  ├─ Auth
-│  │  │  │  ├─ Login.jsx
-│  │  │  │  ├─ Register.jsx
-│  │  │  │  └─ VerifyEmail.jsx
-│  │  │  ├─ Common
-│  │  │  │  ├─ ConfirmationModal.jsx
-│  │  │  │  ├─ SearchBar.jsx
-│  │  │  │  ├─ Toast.jsx
-│  │  │  │  └─ ToastProvider.jsx
-│  │  │  ├─ Events
-│  │  │  │  ├─ Calendar.jsx
-│  │  │  │  ├─ EventForm.jsx
-│  │  │  │  ├─ EventItem.jsx
-│  │  │  │  ├─ EventList.jsx
-│  │  │  │  └─ NLPInput.jsx
-│  │  │  └─ Layout
-│  │  │     ├─ Header.jsx
-│  │  │     └─ Layout.jsx
-│  │  ├─ main.jsx
-│  │  ├─ services
-│  │  │  ├─ api.js
-│  │  │  └─ auth.js
-│  │  └─ styles
-│  │     └─ App.css
-│  └─ vite.config.js
-└─ README.md
+backend/
+┣ api/
+┃ ┣ events.py
+┃ ┣ nlp.py
+┃ ┗ users.py
+┣ models/
+┃ ┣ models.py
+┃ ┣ schemas.py
+┃ ┗ __init__.py
+┣ nlp/
+┃ ┣ datetime_builder.py
+┃ ┣ location.py
+┃ ┣ name_extractor.py
+┃ ┣ preprocess.py
+┃ ┣ reminder.py
+┃ ┗ time_extractor.py
+┣ scripts/
+┃ ┣ debugmail.py
+┃ ┗ run_nlp_test.py
+┣ .env
+┣ database.db
+┣ db.py
+┣ main.py
+┣ nlp_processor.py
+┣ package-lock.json
+┣ package.json
+┣ reminders.py
+┗ requirements.txt
+frontend/
+┣ public/
+┃ ┗ vite.svg
+┣ src/
+┃ ┣ assets/
+┃ ┃ ┗ react.svg
+┃ ┣ components/
+┃ ┃ ┣ Auth/
+┃ ┃ ┃ ┣ Login.jsx
+┃ ┃ ┃ ┗ Register.jsx
+┃ ┃ ┣ Common/
+┃ ┃ ┃ ┣ ConfirmationModal.jsx
+┃ ┃ ┃ ┣ SearchBar.jsx
+┃ ┃ ┃ ┣ Toast.jsx
+┃ ┃ ┃ ┗ ToastProvider.jsx
+┃ ┃ ┣ Events/
+┃ ┃ ┃ ┣ Calendar.jsx
+┃ ┃ ┃ ┣ EventForm.jsx
+┃ ┃ ┃ ┣ EventItem.jsx
+┃ ┃ ┃ ┣ EventList.jsx
+┃ ┃ ┃ ┗ NLPInput.jsx
+┃ ┃ ┗ Layout/
+┃ ┃   ┣ Header.jsx
+┃ ┃   ┗ Layout.jsx
+┃ ┣ services/
+┃ ┃ ┣ api.js
+┃ ┃ ┗ auth.js
+┃ ┣ styles/
+┃ ┃ ┗ App.css
+┃ ┣ App.jsx
+┃ ┗ main.jsx
+┣ .env
+┣ .gitignore
+┣ eslint.config.js
+┣ index.html
+┣ package-lock.json
+┣ package.json
+┣ requirement.txt
+┗ vite.config.js
 
-```
-```
-DACN
-├─ backend
-│  ├─ .env
-│  ├─ api
-│  │  ├─ events.py
-│  │  ├─ nlp.py
-│  │  ├─ users.py
-│  │  └─ __pycache__
-│  │     ├─ events.cpython-311.pyc
-│  │     ├─ events.cpython-314.pyc
-│  │     ├─ nlp.cpython-311.pyc
-│  │     ├─ nlp.cpython-314.pyc
-│  │     ├─ users.cpython-311.pyc
-│  │     └─ users.cpython-314.pyc
-│  ├─ database.db
-│  ├─ db.py
-│  ├─ main.py
-│  ├─ models
-│  │  ├─ models.py
-│  │  ├─ schemas.py
-│  │  ├─ __init__.py
-│  │  └─ __pycache__
-│  │     ├─ models.cpython-311.pyc
-│  │     ├─ models.cpython-314.pyc
-│  │     ├─ schemas.cpython-311.pyc
-│  │     ├─ schemas.cpython-314.pyc
-│  │     ├─ __init__.cpython-311.pyc
-│  │     └─ __init__.cpython-314.pyc
-│  ├─ nlp
-│  │  ├─ datetime_builder.py
-│  │  ├─ location.py
-│  │  ├─ name_extractor.py
-│  │  ├─ preprocess.py
-│  │  ├─ reminder.py
-│  │  ├─ time_extractor.py
-│  │  └─ __pycache__
-│  │     ├─ datetime_builder.cpython-311.pyc
-│  │     ├─ datetime_builder.cpython-314.pyc
-│  │     ├─ location.cpython-311.pyc
-│  │     ├─ location.cpython-314.pyc
-│  │     ├─ name_extractor.cpython-311.pyc
-│  │     ├─ name_extractor.cpython-314.pyc
-│  │     ├─ preprocess.cpython-311.pyc
-│  │     ├─ preprocess.cpython-314.pyc
-│  │     ├─ reminder.cpython-311.pyc
-│  │     ├─ reminder.cpython-314.pyc
-│  │     ├─ time_extractor.cpython-311.pyc
-│  │     └─ time_extractor.cpython-314.pyc
-│  ├─ nlp_processor.py
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ reminders.py
-│  ├─ requirements.txt
-│  ├─ scripts
-│  │  ├─ debugmail.py
-│  │  ├─ run_nlp_test.py
-│  │  └─ __pycache__
-│  │     └─ test_reminder.cpython-314.pyc
-│  └─ __pycache__
-│     ├─ db.cpython-311.pyc
-│     ├─ db.cpython-314.pyc
-│     ├─ main.cpython-311.pyc
-│     ├─ main.cpython-314.pyc
-│     ├─ models.cpython-311.pyc
-│     ├─ nlp_processor.cpython-311.pyc
-│     ├─ nlp_processor.cpython-314.pyc
-│     ├─ reminders.cpython-314.pyc
-│     ├─ reminders_clean.cpython-314.pyc
-│     └─ __init__.cpython-311.pyc
-├─ frontend
-│  ├─ .env
-│  ├─ eslint.config.js
-│  ├─ index.html
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ public
-│  │  └─ vite.svg
-│  ├─ requirement.txt
-│  ├─ src
-│  │  ├─ App.jsx
-│  │  ├─ assets
-│  │  │  └─ react.svg
-│  │  ├─ components
-│  │  │  ├─ Auth
-│  │  │  │  ├─ Login.jsx
-│  │  │  │  ├─ Register.jsx
-│  │  │  │  └─ VerifyEmail.jsx
-│  │  │  ├─ Common
-│  │  │  │  ├─ ConfirmationModal.jsx
-│  │  │  │  ├─ SearchBar.jsx
-│  │  │  │  ├─ Toast.jsx
-│  │  │  │  └─ ToastProvider.jsx
-│  │  │  ├─ Events
-│  │  │  │  ├─ Calendar.jsx
-│  │  │  │  ├─ EventForm.jsx
-│  │  │  │  ├─ EventItem.jsx
-│  │  │  │  ├─ EventList.jsx
-│  │  │  │  └─ NLPInput.jsx
-│  │  │  └─ Layout
-│  │  │     ├─ Header.jsx
-│  │  │     └─ Layout.jsx
-│  │  ├─ main.jsx
-│  │  ├─ services
-│  │  │  ├─ api.js
-│  │  │  └─ auth.js
-│  │  └─ styles
-│  │     └─ App.css
-│  └─ vite.config.js
-└─ README.md
 
-```
+Giao diện đăng nhập
+![alt text](image.png)
+
+Giao diện trang chính
+![alt text](image-1.png)
+
+Giao diện thêm lịch trình bằng ngôn ngữ thường
+![alt text](image-2.png)
