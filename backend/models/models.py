@@ -13,7 +13,7 @@ class User(SQLModel, table=True):
     email: str
     password_hash: str = Field(sa_column=Column("password", String))
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    is_verified: int = 0
+    # `is_verified` column was removed from the users table; keep model minimal.
 
 
 class Event(SQLModel, table=True):

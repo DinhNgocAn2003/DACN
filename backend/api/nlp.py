@@ -9,10 +9,8 @@ processor = NLPProcessor()
 
 @router.post("/parse")
 async def parse_text(request: TextRequest):
-    """
-    Nhận text tiếng Việt và trả về JSON với các field:
-    event_name, start_time, end_time, location, time_reminder
-    """
+    # Nhận text tiếng Việt và trả về JSON với các field:
+    #event_name, start_time, end_time, location, time_reminder
     if not request.text.strip():
         raise HTTPException(status_code=400, detail="Missing text")
     

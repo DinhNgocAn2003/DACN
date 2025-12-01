@@ -87,8 +87,12 @@ def _send_email_smtp(to_email: str, subject: str, body: str) -> bool:
         return False
 
 
-def _get_pending_reminders(session: Session, before_dt: datetime) -> List[Dict[str, Any]]:
-    # Lấy danh sách event cần gửi reminder
+def _get_pending_reminders(session: Session, window_start: datetime, window_end: datetime) -> List[Dict[str, Any]]:
+    """
+    Lấy danh sách event cần gửi reminder trong khoảng (window_start, window_end].
+    Điều này tránh gửi reminder "sớm" nếu job quét với tần suất lớn hơn 1s,
+    và đảm bảo reminder chỉ được gửi nếu reminder_time nằm trong cửa sổ quét gần nhất.
+    """
     stmt = select(Event).where(Event.time_reminder != None, Event.reminder_sent_at == None)
     events = session.exec(stmt).all()
 
@@ -99,7 +103,9 @@ def _get_pending_reminders(session: Session, before_dt: datetime) -> List[Dict[s
                 continue
 
             reminder_time = ev.start_time - timedelta(minutes=int(ev.time_reminder))
-            if reminder_time <= before_dt:
+
+            # Chỉ chọn khi reminder_time nằm trong (window_start, window_end]
+            if reminder_time > window_start and reminder_time <= window_end:
                 user = session.get(User, ev.user_id)
                 if not user or not getattr(user, "email", None):
                     continue
@@ -127,8 +133,12 @@ def _mark_reminder_sent(session: Session, event: Event, sent_at: datetime):
 def _job_runner():
     # Job chính chạy định kỳ
     now = datetime.now()
+    # Tính cửa sổ quét: (now - REMINDER_INTERVAL, now]
+    window_start = now - timedelta(seconds=REMINDER_INTERVAL)
+    window_end = now
+
     with Session(engine) as session:
-        reminders = _get_pending_reminders(session, now)
+        reminders = _get_pending_reminders(session, window_start, window_end)
         for item in reminders:
             ev = item["event"]
             user = item["user"]
@@ -152,9 +162,12 @@ def _job_runner():
 
 
 def start_scheduler(interval_seconds: Optional[int] = None):
-    global _scheduler
+    global _scheduler, REMINDER_INTERVAL
     if interval_seconds is None:
         interval_seconds = REMINDER_INTERVAL
+
+    # Update global REMINDER_INTERVAL so runner uses correct window size
+    REMINDER_INTERVAL = int(interval_seconds)
 
     if _scheduler is not None:
         return _scheduler

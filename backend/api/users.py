@@ -96,7 +96,7 @@ def create_user(user: UserCreate, session: Session = Depends(get_session), reque
         # Không trả password hash cho client
         response = JSONResponse(
             status_code=200,
-            content={"id": u.id, "username": u.username, "email": u.email, "is_verified": u.is_verified}
+            content={"id": u.id, "username": u.username, "email": u.email}
         )
         return add_cors_headers(response, request)
         
@@ -182,11 +182,10 @@ def login(payload: LoginRequest, session: Session = Depends(get_session), reques
             status_code=200,
             content={
                 "user": {
-                    "id": user.id, 
-                    "username": user.username, 
-                    "email": user.email, 
-                    "is_verified": user.is_verified
-                }, 
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                },
                 "token": token
             }
         )
@@ -208,7 +207,7 @@ def list_users(session: Session = Depends(get_session), request: Request = None)
         # Trả về danh sách user đã loại bỏ thông tin nhạy cảm
         response = JSONResponse(
             status_code=200,
-            content=[{"id": u.id, "username": u.username, "email": u.email, "is_verified": u.is_verified} for u in users]
+            content=[{"id": u.id, "username": u.username, "email": u.email} for u in users]
         )
         return add_cors_headers(response, request)
     except Exception as e:
@@ -233,7 +232,7 @@ def get_user_by_username(username: str, session: Session = Depends(get_session),
             
         response = JSONResponse(
             status_code=200,
-            content={"id": user.id, "username": user.username, "email": user.email, "is_verified": user.is_verified}
+            content={"id": user.id, "username": user.username, "email": user.email}
         )
         return add_cors_headers(response, request)
         
