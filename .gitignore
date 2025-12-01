@@ -1,0 +1,12 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+dist/
+frontend/dist/
+
+# Secrets / local envs
+backend/.env
+frontend/.env
+.env.local
+.env.*.local

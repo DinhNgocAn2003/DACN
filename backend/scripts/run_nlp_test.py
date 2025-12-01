@@ -357,7 +357,7 @@ testcases = [
 ]
 
 def run_nlp_tests():
-    """Chạy test và tính độ chính xác của NLP processor"""
+    #Chạy test và tính độ chính xác của NLP processor
     p = NLPProcessor()
     correct_count = 0
     total_count = len(testcases)
@@ -388,17 +388,17 @@ def run_nlp_tests():
                 fields_correct += 1
             else:
                 incorrect_fields.append(field)
-                print(f"   ❌ {field}:")
+                print(f"    {field}:")
                 print(f"      Expected: {expected_value}")
                 print(f"      Actual:   {actual_value}")
         
         # Nếu tất cả fields đều khớp
         if fields_correct == total_fields:
             correct_count += 1
-            print(f"   ✅ ĐÚNG ({fields_correct}/{total_fields} fields)")
+            print(f"ĐÚNG ({fields_correct}/{total_fields} fields)")
         else:
-            incorrect = total_fields - fields_correct
-            print(f"   ❌ SAI ({incorrects}/{total_fields} fields) - Lỗi: {', '.join(incorrect_fields)}")
+            incorrects = total_fields - fields_correct
+            print(f"SAI ({incorrects}/{total_fields} fields) - Lỗi: {', '.join(incorrect_fields)}")
         
         print("-" * 60)
     
