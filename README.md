@@ -63,6 +63,7 @@ npm run dev:all
 
 
 DACN
+```
 backend/
 ┣ api/
 ┃ ┣ events.py
@@ -91,6 +92,7 @@ backend/
 ┣ package.json
 ┣ reminders.py
 ┗ requirements.txt
+
 frontend/
 ┣ public/
 ┃ ┗ vite.svg
@@ -130,13 +132,14 @@ frontend/
 ┣ package.json
 ┣ requirement.txt
 ┗ vite.config.js
+```
 
-
-Giao diện đăng nhập
+## Giao diện đăng nhập
 ![alt text](image.png)
 
-Giao diện trang chính
+
+## Giao diện trang chính
 ![alt text](image-1.png)
 
-Giao diện thêm lịch trình bằng ngôn ngữ thường
+## Giao diện thêm lịch trình bằng ngôn ngữ thường
 ![alt text](image-2.png)
