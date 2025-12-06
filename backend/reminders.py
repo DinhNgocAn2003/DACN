@@ -88,11 +88,9 @@ def _send_email_smtp(to_email: str, subject: str, body: str) -> bool:
 
 
 def _get_pending_reminders(session: Session, window_start: datetime, window_end: datetime) -> List[Dict[str, Any]]:
-    """
-    Lấy danh sách event cần gửi reminder trong khoảng (window_start, window_end].
-    Điều này tránh gửi reminder "sớm" nếu job quét với tần suất lớn hơn 1s,
-    và đảm bảo reminder chỉ được gửi nếu reminder_time nằm trong cửa sổ quét gần nhất.
-    """
+    #Lấy danh sách event cần gửi reminder trong khoảng (window_start, window_end].
+    #Điều này tránh gửi reminder "sớm" nếu job quét với tần suất lớn hơn 1s,
+    #và đảm bảo reminder chỉ được gửi nếu reminder_time nằm trong cửa sổ quét gần nhất.
     stmt = select(Event).where(Event.time_reminder != None, Event.reminder_sent_at == None)
     events = session.exec(stmt).all()
 

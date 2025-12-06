@@ -8,7 +8,7 @@ Một dự án quản lý sự kiện với NLP (xử lý ngôn ngữ tự nhiê
 - Backend: API và bộ xử lý NLP để trích xuất thông tin sự kiện (thời gian, địa điểm, tên, ...).
 - Frontend: Giao diện React (Vite) cho phép người dùng tạo và xem sự kiện.
 
-## Cấu trúc chính
+### Cấu trúc chính
 - `backend/` – mã Python cho API, xử lý NLP và models.
   - `main.py` – điểm vào (server/API).
   - `nlp_processor.py` và `nlp/` – logic xử lý ngôn ngữ.
@@ -20,12 +20,16 @@ Một dự án quản lý sự kiện với NLP (xử lý ngôn ngữ tự nhiê
 - `requirements.txt` – phụ thuộc Python chung (gốc).
 - `backend/requirements.txt` – phụ thuộc riêng cho backend.
 
-# Yêu cầu
+### Yêu cầu
 - Python (xem tại https://www.python.org/downloads/)
 - Node.js và npm (xem tại https://nodejs.org/en/download)
 
+### Clone dự án về máy
+```
+git clone https://github.com/DinhNgocAn2003/DACN
+```
 
-# Cài đặt ở backend
+### Cài đặt ở backend
 1. Đến thư mục backend (từ thư mục gốc)
 ```powershell
 cd .\backend\
@@ -34,9 +38,17 @@ cd .\backend\
 ```powershell
 python -m pip install -r requirements.txt 
 ```
+3. Tạo hoặc vào file .env và cấu hình các thông tin về tài khoản email, phục vụ cho quá trình gửi thông báo nhắc nhở lịch trình, cấu hình theo mẫu sau:
+```
+SMTP_HOST=smtp.gmail.com 		//máy chủ gửi email (Gmail).
+SMTP_PORT=465				//cổng kết nối (465 cho SSL).
+SMTP_USER= ....@gmail.com		//email gửi đi.
+SMTP_PASS= <16 ký tự > // tham khảo lấy tại: https://myaccount.google.com/apppasswords 
+FROM_EMAIL=EVENT ASSISTANT 		//tên hiển thị của hệ thống khi gửi
+REMINDER_INTERVAL=60			// thời gian nhắc nhở (giây). 
+```
 
-
-# Cài đặt ở frontend
+### Cài đặt ở frontend
 1. Đến thư mục backend (từ thư mục gốc)
 ```powershell
 cd frontend
@@ -45,10 +57,9 @@ cd frontend
 ```powershell
 npm install
 ```
-2. Mở trình duyệt theo địa chỉ mà Vite hiển thị (mặc định thường là `http://localhost:5173`).
 
-# Run code
-1. Đến thư mục backend (từ thư mục gốc)
+### Run code
+1. Đến thư mục backend (từ thư mục gốc) - DACN/backend
 ```powershell
 cd .\backend\
 ```
@@ -57,13 +68,13 @@ cd .\backend\
 npm run dev:all
 ```
 
-## Ghi chú phát triển
+### Ghi chú phát triển
 - Thay đổi NLP nằm trong `backend/nlp/` — các module tách biệt cho thời gian, địa điểm, tên.
 - API routes có trong `backend/api/`.
 
-
-DACN
+## Cấu trúc dự án
 ```
+DACN
 backend/
 ┣ api/
 ┃ ┣ events.py
@@ -143,3 +154,20 @@ frontend/
 
 ## Giao diện thêm lịch trình bằng ngôn ngữ thường
 ![alt text](image-2.png)
+
+# DEMO NLP
+
+## TRƯỜNG HỢP THÀNH CÔNG
+## Bước 1. Đăng nhập vào trang chính và nhập text vào ô và chọn "Phân tích"
+![alt text](image-3.png)
+## Bước 2. Hệ thống phân tích và trả về các trường để người dùng kiểm tra
+![alt text](image-4.png)
+## Bước 3. Sau khi kiểm tra, người dùng có thể chọn "Thêm vào lịch" để ghi vào database
+![alt text](image-5.png)
+
+
+## TRƯỜNG HỢP KHÔNG THÀNH CÔNG (Không thành công ở bước chọn "Phân tích")
+## TH1. Thiếu start_time
+![alt text](image-6.png)
+## TH2. Start_time không tồn tại
+![alt text](image-7.png)
