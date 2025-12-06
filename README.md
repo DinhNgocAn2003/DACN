@@ -1,12 +1,11 @@
 # ĐỒ ÁN CHUYÊN NGÀNH  - Trợ lý quản lý lịch trình cá nhân
 Một dự án quản lý sự kiện với NLP (xử lý ngôn ngữ tự nhiên) để tạo/quản lý sự kiện.
-# Thông tin sinh viên
+# THÔNG TIN SINH VIÊN
 - Sinh viên:  ĐINH NGỌC ÂN
 - MSSV:       3121410062
-
-# Mô tả dự án
-- Backend: API và bộ xử lý NLP để trích xuất thông tin sự kiện (thời gian, địa điểm, tên, ...).
-- Frontend: Giao diện React (Vite) cho phép người dùng tạo và xem sự kiện.
+# NỘI DUNG CHÍNH
+### Mô tả đề tài:
+Đề tài nhằm xây dựng một hệ thống hỗ trợ người dùng sắp xếp, theo dõi và nhắc nhở các hoạt động.
 
 ### Cấu trúc chính
 - `backend/` – mã Python cho API, xử lý NLP và models.
@@ -171,3 +170,9 @@ frontend/
 ![alt text](image-6.png)
 ## TH2. Start_time không tồn tại
 ![alt text](image-7.png)
+
+# DEMO REMINDER
+## Thêm lịch trình có đặt nhắc nhở
+![alt text](image-8.png)
+## Khi đến thời gian nhắc nhở, hệ thống sẽ được gửi mail đến người dùng
+![alt text](image-9.png)
