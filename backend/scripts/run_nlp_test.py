@@ -362,7 +362,7 @@ def run_nlp_tests():
     correct_count = 0
     total_count = len(testcases)
     
-    print("🧪 BẮT ĐẦU KIỂM TRA NLP PROCESSOR")
+    print("BẮT ĐẦU KIỂM TRA NLP PROCESSOR")
     print("=" * 80)
     
     for i, test_case in enumerate(testcases, 1):
